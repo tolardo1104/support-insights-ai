@@ -16,9 +16,15 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppRankingRouteImport } from './routes/app.ranking'
 import { Route as AppMetasRouteImport } from './routes/app.metas'
 import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
+import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
 import { Route as AppClientesRouteImport } from './routes/app.clientes'
 import { Route as AppAtendentesRouteImport } from './routes/app.atendentes'
 import { Route as AppAnaliseIaRouteImport } from './routes/app.analise-ia'
+import { Route as AppConfiguracoesIndexRouteImport } from './routes/app.configuracoes.index'
+import { Route as AppConfiguracoesRankingRouteImport } from './routes/app.configuracoes.ranking'
+import { Route as AppConfiguracoesMetasRouteImport } from './routes/app.configuracoes.metas'
+import { Route as AppConfiguracoesIntegracaoRouteImport } from './routes/app.configuracoes.integracao'
+import { Route as AppConfiguracoesIaRouteImport } from './routes/app.configuracoes.ia'
 import { Route as AppAtendentesIdRouteImport } from './routes/app.atendentes.$id'
 
 const LoginRoute = LoginRouteImport.update({
@@ -56,6 +62,11 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
+const AppConfiguracoesRoute = AppConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppClientesRoute = AppClientesRouteImport.update({
   id: '/clientes',
   path: '/clientes',
@@ -71,6 +82,32 @@ const AppAnaliseIaRoute = AppAnaliseIaRouteImport.update({
   path: '/analise-ia',
   getParentRoute: () => AppRoute,
 } as any)
+const AppConfiguracoesIndexRoute = AppConfiguracoesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppConfiguracoesRoute,
+} as any)
+const AppConfiguracoesRankingRoute = AppConfiguracoesRankingRouteImport.update({
+  id: '/ranking',
+  path: '/ranking',
+  getParentRoute: () => AppConfiguracoesRoute,
+} as any)
+const AppConfiguracoesMetasRoute = AppConfiguracoesMetasRouteImport.update({
+  id: '/metas',
+  path: '/metas',
+  getParentRoute: () => AppConfiguracoesRoute,
+} as any)
+const AppConfiguracoesIntegracaoRoute =
+  AppConfiguracoesIntegracaoRouteImport.update({
+    id: '/integracao',
+    path: '/integracao',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
+const AppConfiguracoesIaRoute = AppConfiguracoesIaRouteImport.update({
+  id: '/ia',
+  path: '/ia',
+  getParentRoute: () => AppConfiguracoesRoute,
+} as any)
 const AppAtendentesIdRoute = AppAtendentesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -84,11 +121,17 @@ export interface FileRoutesByFullPath {
   '/app/analise-ia': typeof AppAnaliseIaRoute
   '/app/atendentes': typeof AppAtendentesRouteWithChildren
   '/app/clientes': typeof AppClientesRoute
+  '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/dashboard': typeof AppDashboardRoute
   '/app/metas': typeof AppMetasRoute
   '/app/ranking': typeof AppRankingRoute
   '/app/': typeof AppIndexRoute
   '/app/atendentes/$id': typeof AppAtendentesIdRoute
+  '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
+  '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
+  '/app/configuracoes/metas': typeof AppConfiguracoesMetasRoute
+  '/app/configuracoes/ranking': typeof AppConfiguracoesRankingRoute
+  '/app/configuracoes/': typeof AppConfiguracoesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -101,6 +144,11 @@ export interface FileRoutesByTo {
   '/app/ranking': typeof AppRankingRoute
   '/app': typeof AppIndexRoute
   '/app/atendentes/$id': typeof AppAtendentesIdRoute
+  '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
+  '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
+  '/app/configuracoes/metas': typeof AppConfiguracoesMetasRoute
+  '/app/configuracoes/ranking': typeof AppConfiguracoesRankingRoute
+  '/app/configuracoes': typeof AppConfiguracoesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -110,11 +158,17 @@ export interface FileRoutesById {
   '/app/analise-ia': typeof AppAnaliseIaRoute
   '/app/atendentes': typeof AppAtendentesRouteWithChildren
   '/app/clientes': typeof AppClientesRoute
+  '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/dashboard': typeof AppDashboardRoute
   '/app/metas': typeof AppMetasRoute
   '/app/ranking': typeof AppRankingRoute
   '/app/': typeof AppIndexRoute
   '/app/atendentes/$id': typeof AppAtendentesIdRoute
+  '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
+  '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
+  '/app/configuracoes/metas': typeof AppConfiguracoesMetasRoute
+  '/app/configuracoes/ranking': typeof AppConfiguracoesRankingRoute
+  '/app/configuracoes/': typeof AppConfiguracoesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -125,11 +179,17 @@ export interface FileRouteTypes {
     | '/app/analise-ia'
     | '/app/atendentes'
     | '/app/clientes'
+    | '/app/configuracoes'
     | '/app/dashboard'
     | '/app/metas'
     | '/app/ranking'
     | '/app/'
     | '/app/atendentes/$id'
+    | '/app/configuracoes/ia'
+    | '/app/configuracoes/integracao'
+    | '/app/configuracoes/metas'
+    | '/app/configuracoes/ranking'
+    | '/app/configuracoes/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -142,6 +202,11 @@ export interface FileRouteTypes {
     | '/app/ranking'
     | '/app'
     | '/app/atendentes/$id'
+    | '/app/configuracoes/ia'
+    | '/app/configuracoes/integracao'
+    | '/app/configuracoes/metas'
+    | '/app/configuracoes/ranking'
+    | '/app/configuracoes'
   id:
     | '__root__'
     | '/'
@@ -150,11 +215,17 @@ export interface FileRouteTypes {
     | '/app/analise-ia'
     | '/app/atendentes'
     | '/app/clientes'
+    | '/app/configuracoes'
     | '/app/dashboard'
     | '/app/metas'
     | '/app/ranking'
     | '/app/'
     | '/app/atendentes/$id'
+    | '/app/configuracoes/ia'
+    | '/app/configuracoes/integracao'
+    | '/app/configuracoes/metas'
+    | '/app/configuracoes/ranking'
+    | '/app/configuracoes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -214,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/configuracoes': {
+      id: '/app/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/app/configuracoes'
+      preLoaderRoute: typeof AppConfiguracoesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/clientes': {
       id: '/app/clientes'
       path: '/clientes'
@@ -234,6 +312,41 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/analise-ia'
       preLoaderRoute: typeof AppAnaliseIaRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/app/configuracoes/': {
+      id: '/app/configuracoes/'
+      path: '/'
+      fullPath: '/app/configuracoes/'
+      preLoaderRoute: typeof AppConfiguracoesIndexRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
+    '/app/configuracoes/ranking': {
+      id: '/app/configuracoes/ranking'
+      path: '/ranking'
+      fullPath: '/app/configuracoes/ranking'
+      preLoaderRoute: typeof AppConfiguracoesRankingRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
+    '/app/configuracoes/metas': {
+      id: '/app/configuracoes/metas'
+      path: '/metas'
+      fullPath: '/app/configuracoes/metas'
+      preLoaderRoute: typeof AppConfiguracoesMetasRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
+    '/app/configuracoes/integracao': {
+      id: '/app/configuracoes/integracao'
+      path: '/integracao'
+      fullPath: '/app/configuracoes/integracao'
+      preLoaderRoute: typeof AppConfiguracoesIntegracaoRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
+    '/app/configuracoes/ia': {
+      id: '/app/configuracoes/ia'
+      path: '/ia'
+      fullPath: '/app/configuracoes/ia'
+      preLoaderRoute: typeof AppConfiguracoesIaRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
     }
     '/app/atendentes/$id': {
       id: '/app/atendentes/$id'
@@ -257,10 +370,30 @@ const AppAtendentesRouteWithChildren = AppAtendentesRoute._addFileChildren(
   AppAtendentesRouteChildren,
 )
 
+interface AppConfiguracoesRouteChildren {
+  AppConfiguracoesIaRoute: typeof AppConfiguracoesIaRoute
+  AppConfiguracoesIntegracaoRoute: typeof AppConfiguracoesIntegracaoRoute
+  AppConfiguracoesMetasRoute: typeof AppConfiguracoesMetasRoute
+  AppConfiguracoesRankingRoute: typeof AppConfiguracoesRankingRoute
+  AppConfiguracoesIndexRoute: typeof AppConfiguracoesIndexRoute
+}
+
+const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
+  AppConfiguracoesIaRoute: AppConfiguracoesIaRoute,
+  AppConfiguracoesIntegracaoRoute: AppConfiguracoesIntegracaoRoute,
+  AppConfiguracoesMetasRoute: AppConfiguracoesMetasRoute,
+  AppConfiguracoesRankingRoute: AppConfiguracoesRankingRoute,
+  AppConfiguracoesIndexRoute: AppConfiguracoesIndexRoute,
+}
+
+const AppConfiguracoesRouteWithChildren =
+  AppConfiguracoesRoute._addFileChildren(AppConfiguracoesRouteChildren)
+
 interface AppRouteChildren {
   AppAnaliseIaRoute: typeof AppAnaliseIaRoute
   AppAtendentesRoute: typeof AppAtendentesRouteWithChildren
   AppClientesRoute: typeof AppClientesRoute
+  AppConfiguracoesRoute: typeof AppConfiguracoesRouteWithChildren
   AppDashboardRoute: typeof AppDashboardRoute
   AppMetasRoute: typeof AppMetasRoute
   AppRankingRoute: typeof AppRankingRoute
@@ -271,6 +404,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAnaliseIaRoute: AppAnaliseIaRoute,
   AppAtendentesRoute: AppAtendentesRouteWithChildren,
   AppClientesRoute: AppClientesRoute,
+  AppConfiguracoesRoute: AppConfiguracoesRouteWithChildren,
   AppDashboardRoute: AppDashboardRoute,
   AppMetasRoute: AppMetasRoute,
   AppRankingRoute: AppRankingRoute,
