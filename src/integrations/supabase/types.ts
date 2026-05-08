@@ -14,13 +14,443 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      analises_ia: {
+        Row: {
+          atendente_id: string | null
+          criado_em: string
+          ia_modelo: string | null
+          ia_provedor: string | null
+          id: string
+          organizacao_id: string
+          periodo_fim: string | null
+          periodo_inicio: string | null
+          resultado: Json
+          tipo: string
+        }
+        Insert: {
+          atendente_id?: string | null
+          criado_em?: string
+          ia_modelo?: string | null
+          ia_provedor?: string | null
+          id?: string
+          organizacao_id: string
+          periodo_fim?: string | null
+          periodo_inicio?: string | null
+          resultado: Json
+          tipo: string
+        }
+        Update: {
+          atendente_id?: string | null
+          criado_em?: string
+          ia_modelo?: string | null
+          ia_provedor?: string | null
+          id?: string
+          organizacao_id?: string
+          periodo_fim?: string | null
+          periodo_inicio?: string | null
+          resultado?: Json
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analises_ia_atendente_id_fkey"
+            columns: ["atendente_id"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analises_ia_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      atendentes: {
+        Row: {
+          ativo: boolean | null
+          criado_em: string
+          email: string | null
+          equipe: string | null
+          id: string
+          movidesk_id: string | null
+          nome: string
+          organizacao_id: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          criado_em?: string
+          email?: string | null
+          equipe?: string | null
+          id?: string
+          movidesk_id?: string | null
+          nome: string
+          organizacao_id: string
+        }
+        Update: {
+          ativo?: boolean | null
+          criado_em?: string
+          email?: string | null
+          equipe?: string | null
+          id?: string
+          movidesk_id?: string | null
+          nome?: string
+          organizacao_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "atendentes_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      configuracoes: {
+        Row: {
+          atualizado_em: string
+          criado_em: string
+          ia_analise_automatica: string | null
+          ia_api_key: string | null
+          ia_idioma: string | null
+          ia_modelo: string | null
+          ia_prompt_analise_atendente: string | null
+          ia_prompt_analise_geral: string | null
+          ia_provedor: string | null
+          ia_tickets_analisados: number | null
+          id: string
+          movidesk_api_key: string | null
+          organizacao_id: string
+          sync_intervalo_minutos: number | null
+        }
+        Insert: {
+          atualizado_em?: string
+          criado_em?: string
+          ia_analise_automatica?: string | null
+          ia_api_key?: string | null
+          ia_idioma?: string | null
+          ia_modelo?: string | null
+          ia_prompt_analise_atendente?: string | null
+          ia_prompt_analise_geral?: string | null
+          ia_provedor?: string | null
+          ia_tickets_analisados?: number | null
+          id?: string
+          movidesk_api_key?: string | null
+          organizacao_id: string
+          sync_intervalo_minutos?: number | null
+        }
+        Update: {
+          atualizado_em?: string
+          criado_em?: string
+          ia_analise_automatica?: string | null
+          ia_api_key?: string | null
+          ia_idioma?: string | null
+          ia_modelo?: string | null
+          ia_prompt_analise_atendente?: string | null
+          ia_prompt_analise_geral?: string | null
+          ia_provedor?: string | null
+          ia_tickets_analisados?: number | null
+          id?: string
+          movidesk_api_key?: string | null
+          organizacao_id?: string
+          sync_intervalo_minutos?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "configuracoes_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: true
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      metas: {
+        Row: {
+          atendente_id: string | null
+          ativo: boolean | null
+          criado_em: string
+          id: string
+          metrica: string
+          organizacao_id: string
+          periodo: string
+          valor_meta: number
+        }
+        Insert: {
+          atendente_id?: string | null
+          ativo?: boolean | null
+          criado_em?: string
+          id?: string
+          metrica: string
+          organizacao_id: string
+          periodo?: string
+          valor_meta: number
+        }
+        Update: {
+          atendente_id?: string | null
+          ativo?: boolean | null
+          criado_em?: string
+          id?: string
+          metrica?: string
+          organizacao_id?: string
+          periodo?: string
+          valor_meta?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metas_atendente_id_fkey"
+            columns: ["atendente_id"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metas_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizacoes: {
+        Row: {
+          criado_em: string
+          id: string
+          nome: string
+          plano: string
+          slug: string
+        }
+        Insert: {
+          criado_em?: string
+          id?: string
+          nome: string
+          plano?: string
+          slug: string
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          nome?: string
+          plano?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      peso_ranking: {
+        Row: {
+          atualizado_em: string
+          id: string
+          organizacao_id: string
+          peso_csat: number | null
+          peso_metas: number | null
+          peso_score_ia: number | null
+          peso_tma: number | null
+          peso_volume: number | null
+        }
+        Insert: {
+          atualizado_em?: string
+          id?: string
+          organizacao_id: string
+          peso_csat?: number | null
+          peso_metas?: number | null
+          peso_score_ia?: number | null
+          peso_tma?: number | null
+          peso_volume?: number | null
+        }
+        Update: {
+          atualizado_em?: string
+          id?: string
+          organizacao_id?: string
+          peso_csat?: number | null
+          peso_metas?: number | null
+          peso_score_ia?: number | null
+          peso_tma?: number | null
+          peso_volume?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "peso_ranking_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: true
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          criado_em: string
+          email: string | null
+          id: string
+          nome: string | null
+          organizacao_id: string | null
+        }
+        Insert: {
+          criado_em?: string
+          email?: string | null
+          id: string
+          nome?: string | null
+          organizacao_id?: string | null
+        }
+        Update: {
+          criado_em?: string
+          email?: string | null
+          id?: string
+          nome?: string | null
+          organizacao_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ranking_scores: {
+        Row: {
+          atendente_id: string
+          calculado_em: string
+          id: string
+          organizacao_id: string
+          periodo_mes: string
+          posicao: number | null
+          score_csat: number | null
+          score_ia: number | null
+          score_metas: number | null
+          score_tma: number | null
+          score_total: number | null
+          score_volume: number | null
+        }
+        Insert: {
+          atendente_id: string
+          calculado_em?: string
+          id?: string
+          organizacao_id: string
+          periodo_mes: string
+          posicao?: number | null
+          score_csat?: number | null
+          score_ia?: number | null
+          score_metas?: number | null
+          score_tma?: number | null
+          score_total?: number | null
+          score_volume?: number | null
+        }
+        Update: {
+          atendente_id?: string
+          calculado_em?: string
+          id?: string
+          organizacao_id?: string
+          periodo_mes?: string
+          posicao?: number | null
+          score_csat?: number | null
+          score_ia?: number | null
+          score_metas?: number | null
+          score_tma?: number | null
+          score_total?: number | null
+          score_volume?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ranking_scores_atendente_id_fkey"
+            columns: ["atendente_id"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ranking_scores_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets_cache: {
+        Row: {
+          assunto: string | null
+          atendente_id: string | null
+          categoria: string | null
+          cliente_id: string | null
+          cliente_nome: string | null
+          criado_em: string | null
+          csat_nota: number | null
+          id: string
+          mensagens: Json | null
+          movidesk_ticket_id: string | null
+          organizacao_id: string
+          prioridade: string | null
+          resolvido_em: string | null
+          sincronizado_em: string
+          status: string | null
+          tma_minutos: number | null
+        }
+        Insert: {
+          assunto?: string | null
+          atendente_id?: string | null
+          categoria?: string | null
+          cliente_id?: string | null
+          cliente_nome?: string | null
+          criado_em?: string | null
+          csat_nota?: number | null
+          id?: string
+          mensagens?: Json | null
+          movidesk_ticket_id?: string | null
+          organizacao_id: string
+          prioridade?: string | null
+          resolvido_em?: string | null
+          sincronizado_em?: string
+          status?: string | null
+          tma_minutos?: number | null
+        }
+        Update: {
+          assunto?: string | null
+          atendente_id?: string | null
+          categoria?: string | null
+          cliente_id?: string | null
+          cliente_nome?: string | null
+          criado_em?: string | null
+          csat_nota?: number | null
+          id?: string
+          mensagens?: Json | null
+          movidesk_ticket_id?: string | null
+          organizacao_id?: string
+          prioridade?: string | null
+          resolvido_em?: string | null
+          sincronizado_em?: string
+          status?: string | null
+          tma_minutos?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_cache_atendente_id_fkey"
+            columns: ["atendente_id"]
+            isOneToOne: false
+            referencedRelation: "atendentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_cache_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_org: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
