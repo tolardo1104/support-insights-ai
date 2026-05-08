@@ -13,6 +13,13 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppRankingRouteImport } from './routes/app.ranking'
+import { Route as AppMetasRouteImport } from './routes/app.metas'
+import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
+import { Route as AppClientesRouteImport } from './routes/app.clientes'
+import { Route as AppAtendentesRouteImport } from './routes/app.atendentes'
+import { Route as AppAnaliseIaRouteImport } from './routes/app.analise-ia'
+import { Route as AppAtendentesIdRouteImport } from './routes/app.atendentes.$id'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -34,31 +41,120 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppRankingRoute = AppRankingRouteImport.update({
+  id: '/ranking',
+  path: '/ranking',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMetasRoute = AppMetasRouteImport.update({
+  id: '/metas',
+  path: '/metas',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClientesRoute = AppClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAtendentesRoute = AppAtendentesRouteImport.update({
+  id: '/atendentes',
+  path: '/atendentes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAnaliseIaRoute = AppAnaliseIaRouteImport.update({
+  id: '/analise-ia',
+  path: '/analise-ia',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAtendentesIdRoute = AppAtendentesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppAtendentesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/app/analise-ia': typeof AppAnaliseIaRoute
+  '/app/atendentes': typeof AppAtendentesRouteWithChildren
+  '/app/clientes': typeof AppClientesRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/metas': typeof AppMetasRoute
+  '/app/ranking': typeof AppRankingRoute
   '/app/': typeof AppIndexRoute
+  '/app/atendentes/$id': typeof AppAtendentesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/app/analise-ia': typeof AppAnaliseIaRoute
+  '/app/atendentes': typeof AppAtendentesRouteWithChildren
+  '/app/clientes': typeof AppClientesRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/metas': typeof AppMetasRoute
+  '/app/ranking': typeof AppRankingRoute
   '/app': typeof AppIndexRoute
+  '/app/atendentes/$id': typeof AppAtendentesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/app/analise-ia': typeof AppAnaliseIaRoute
+  '/app/atendentes': typeof AppAtendentesRouteWithChildren
+  '/app/clientes': typeof AppClientesRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/metas': typeof AppMetasRoute
+  '/app/ranking': typeof AppRankingRoute
   '/app/': typeof AppIndexRoute
+  '/app/atendentes/$id': typeof AppAtendentesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/login' | '/app/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/login'
+    | '/app/analise-ia'
+    | '/app/atendentes'
+    | '/app/clientes'
+    | '/app/dashboard'
+    | '/app/metas'
+    | '/app/ranking'
+    | '/app/'
+    | '/app/atendentes/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/app'
-  id: '__root__' | '/' | '/app' | '/login' | '/app/'
+  to:
+    | '/'
+    | '/login'
+    | '/app/analise-ia'
+    | '/app/atendentes'
+    | '/app/clientes'
+    | '/app/dashboard'
+    | '/app/metas'
+    | '/app/ranking'
+    | '/app'
+    | '/app/atendentes/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/login'
+    | '/app/analise-ia'
+    | '/app/atendentes'
+    | '/app/clientes'
+    | '/app/dashboard'
+    | '/app/metas'
+    | '/app/ranking'
+    | '/app/'
+    | '/app/atendentes/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -97,14 +193,87 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/ranking': {
+      id: '/app/ranking'
+      path: '/ranking'
+      fullPath: '/app/ranking'
+      preLoaderRoute: typeof AppRankingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/metas': {
+      id: '/app/metas'
+      path: '/metas'
+      fullPath: '/app/metas'
+      preLoaderRoute: typeof AppMetasRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/dashboard': {
+      id: '/app/dashboard'
+      path: '/dashboard'
+      fullPath: '/app/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/clientes': {
+      id: '/app/clientes'
+      path: '/clientes'
+      fullPath: '/app/clientes'
+      preLoaderRoute: typeof AppClientesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/atendentes': {
+      id: '/app/atendentes'
+      path: '/atendentes'
+      fullPath: '/app/atendentes'
+      preLoaderRoute: typeof AppAtendentesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/analise-ia': {
+      id: '/app/analise-ia'
+      path: '/analise-ia'
+      fullPath: '/app/analise-ia'
+      preLoaderRoute: typeof AppAnaliseIaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/atendentes/$id': {
+      id: '/app/atendentes/$id'
+      path: '/$id'
+      fullPath: '/app/atendentes/$id'
+      preLoaderRoute: typeof AppAtendentesIdRouteImport
+      parentRoute: typeof AppAtendentesRoute
+    }
   }
 }
 
+interface AppAtendentesRouteChildren {
+  AppAtendentesIdRoute: typeof AppAtendentesIdRoute
+}
+
+const AppAtendentesRouteChildren: AppAtendentesRouteChildren = {
+  AppAtendentesIdRoute: AppAtendentesIdRoute,
+}
+
+const AppAtendentesRouteWithChildren = AppAtendentesRoute._addFileChildren(
+  AppAtendentesRouteChildren,
+)
+
 interface AppRouteChildren {
+  AppAnaliseIaRoute: typeof AppAnaliseIaRoute
+  AppAtendentesRoute: typeof AppAtendentesRouteWithChildren
+  AppClientesRoute: typeof AppClientesRoute
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppMetasRoute: typeof AppMetasRoute
+  AppRankingRoute: typeof AppRankingRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAnaliseIaRoute: AppAnaliseIaRoute,
+  AppAtendentesRoute: AppAtendentesRouteWithChildren,
+  AppClientesRoute: AppClientesRoute,
+  AppDashboardRoute: AppDashboardRoute,
+  AppMetasRoute: AppMetasRoute,
+  AppRankingRoute: AppRankingRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
@@ -118,3 +287,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
