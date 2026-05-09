@@ -69,7 +69,10 @@ function Dashboard() {
                 <SelectItem value="n2">Suporte N2</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" onClick={sync}><RefreshCw className="h-4 w-4 mr-2" />Sincronizar</Button>
+            <Button variant="outline" onClick={sync} disabled={syncing}>
+              {syncing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+              Sincronizar
+            </Button>
             <Button onClick={analyze} disabled={analyzing}>
               <Sparkles className="h-4 w-4 mr-2" />{analyzing ? "Analisando..." : "Analisar com IA"}
             </Button>
