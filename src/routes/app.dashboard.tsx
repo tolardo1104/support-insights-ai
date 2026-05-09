@@ -11,9 +11,12 @@ import {
   ResponsiveContainer, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, CartesianGrid,
 } from "recharts";
-import { RefreshCw, Sparkles, TicketIcon, Clock, Smile, Target, CheckCircle, ChevronUp, ChevronDown } from "lucide-react";
+import { RefreshCw, Sparkles, TicketIcon, Clock, Smile, Target, CheckCircle, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { syncMovideskTickets } from "@/lib/movidesk.functions";
+import { analyzePeriod } from "@/lib/ai-analysis.functions";
 
 export const Route = createFileRoute("/app/dashboard")({ component: Dashboard });
 
@@ -22,14 +25,25 @@ const COLORS = ["oklch(0.55 0.21 262)", "oklch(0.65 0.17 152)", "oklch(0.78 0.16
 function Dashboard() {
   const [periodo, setPeriodo] = useState("mes");
   const [analyzing, setAnalyzing] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const syncFn = useServerFn(syncMovideskTickets);
+  const analyzeFn = useServerFn(analyzePeriod);
 
-  const sync = () => toast.success("Sincronização iniciada (modo demo)");
-  const analyze = () => {
+  const sync = async () => {
+    setSyncing(true);
+    try {
+      const r = await syncFn({ data: { dias: 30 } });
+      r.ok ? toast.success(r.message) : toast.warning(r.message);
+    } catch (e: any) { toast.error(e.message); }
+    finally { setSyncing(false); }
+  };
+  const analyze = async () => {
     setAnalyzing(true);
-    setTimeout(() => {
-      setAnalyzing(false);
-      toast.success("Análise IA gerada");
-    }, 1200);
+    try {
+      const r = await analyzeFn({ data: { periodo: periodo as any } });
+      r.ok ? toast.success("Análise IA gerada") : toast.warning(r.resultado);
+    } catch (e: any) { toast.error(e.message); }
+    finally { setAnalyzing(false); }
   };
 
   return (
