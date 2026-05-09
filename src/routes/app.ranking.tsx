@@ -59,6 +59,10 @@ function RankingPage() {
                 <SelectItem value="csat">CSAT</SelectItem>
               </SelectContent>
             </Select>
+            <Button variant="outline" onClick={recalcular} disabled={recalc}>
+              {recalc ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+              Recalcular
+            </Button>
             <Dialog>
               <DialogTrigger asChild><Button variant="outline"><Settings2 className="h-4 w-4 mr-2" />Configurar pesos</Button></DialogTrigger>
               <DialogContent>
