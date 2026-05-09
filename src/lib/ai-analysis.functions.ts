@@ -59,7 +59,7 @@ export const analyzePeriod = createServerFn({ method: "POST" })
     await supabase.from("analises_ia").insert({
       organizacao_id: orgId, tipo: "geral",
       ia_provedor: cfg?.ia_provedor, ia_modelo: cfg?.ia_modelo,
-      resultado: { texto: text, totais },
+      resultado: { texto: text, totais } as any,
       periodo_inicio: since.slice(0, 10), periodo_fim: new Date().toISOString().slice(0, 10),
     });
 
