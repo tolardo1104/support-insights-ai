@@ -6,16 +6,29 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { mockAtendentes } from "@/lib/mock-data";
-import { Trophy, Star, Settings2 } from "lucide-react";
+import { Trophy, Star, Settings2, RefreshCw, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { calculateRanking } from "@/lib/ranking.functions";
 
 export const Route = createFileRoute("/app/ranking")({ component: RankingPage });
 
 function RankingPage() {
   const [metric, setMetric] = useState("score");
   const [pesos, setPesos] = useState({ csat: 30, volume: 25, tma: 20, ia: 15, metas: 10 });
+  const [recalc, setRecalc] = useState(false);
+  const calcFn = useServerFn(calculateRanking);
   const total = pesos.csat + pesos.volume + pesos.tma + pesos.ia + pesos.metas;
+
+  const recalcular = async () => {
+    setRecalc(true);
+    try {
+      const r = await calcFn({});
+      r.ok ? toast.success(r.message) : toast.warning(r.message);
+    } catch (e: any) { toast.error(e.message); }
+    finally { setRecalc(false); }
+  };
 
   const ordenado = [...mockAtendentes].sort((a, b) => {
     if (metric === "tma") return a.tma - b.tma;
