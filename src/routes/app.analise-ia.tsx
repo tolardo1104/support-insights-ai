@@ -8,20 +8,26 @@ import { mockAnaliseIaGeral, mockHistoricoAnalises } from "@/lib/mock-data";
 import { Sparkles, Loader2, FileText } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { analyzePeriod } from "@/lib/ai-analysis.functions";
 
 export const Route = createFileRoute("/app/analise-ia")({ component: AnaliseIaPage });
 
 function AnaliseIaPage() {
   const [resultado, setResultado] = useState(mockAnaliseIaGeral);
   const [loading, setLoading] = useState(false);
+  const [periodo, setPeriodo] = useState<"semana" | "mes" | "trimestre">("mes");
+  const analyze = useServerFn(analyzePeriod);
 
-  const exec = () => {
+  const exec = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setResultado(mockAnaliseIaGeral);
-      toast.success("Análise gerada");
-    }, 1500);
+    try {
+      const r = await analyze({ data: { periodo } });
+      setResultado(r.resultado);
+      r.ok ? toast.success("Análise gerada") : toast.warning(r.resultado);
+    } catch (e: any) {
+      toast.error(e.message ?? "Falha ao gerar análise");
+    } finally { setLoading(false); }
   };
 
   return (
@@ -31,7 +37,7 @@ function AnaliseIaPage() {
       <Card className="p-6 mb-6">
         <h3 className="font-semibold mb-4 flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" />Análise do período</h3>
         <div className="flex gap-3 flex-wrap mb-6">
-          <Select defaultValue="mes">
+          <Select value={periodo} onValueChange={(v: any) => setPeriodo(v)}>
             <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="semana">Última semana</SelectItem>
