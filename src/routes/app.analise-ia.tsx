@@ -8,20 +8,26 @@ import { mockAnaliseIaGeral, mockHistoricoAnalises } from "@/lib/mock-data";
 import { Sparkles, Loader2, FileText } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { analyzePeriod } from "@/lib/ai-analysis.functions";
 
 export const Route = createFileRoute("/app/analise-ia")({ component: AnaliseIaPage });
 
 function AnaliseIaPage() {
   const [resultado, setResultado] = useState(mockAnaliseIaGeral);
   const [loading, setLoading] = useState(false);
+  const [periodo, setPeriodo] = useState<"semana" | "mes" | "trimestre">("mes");
+  const analyze = useServerFn(analyzePeriod);
 
-  const exec = () => {
+  const exec = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setResultado(mockAnaliseIaGeral);
-      toast.success("Análise gerada");
-    }, 1500);
+    try {
+      const r = await analyze({ data: { periodo } });
+      setResultado(r.resultado);
+      r.ok ? toast.success("Análise gerada") : toast.warning(r.resultado);
+    } catch (e: any) {
+      toast.error(e.message ?? "Falha ao gerar análise");
+    } finally { setLoading(false); }
   };
 
   return (
