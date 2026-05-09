@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.get_user_org(uuid) TO authenticated, anon, service_role;
