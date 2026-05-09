@@ -26,7 +26,11 @@ function IntegracaoConfig() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("configuracoes").select("movidesk_api_key,sync_intervalo_minutos").maybeSingle();
+      const { data, error } = await supabase
+        .from("configuracoes")
+        .select("movidesk_api_key,sync_intervalo_minutos")
+        .maybeSingle();
+      if (error) { toast.error(error.message); return; }
       if (data?.movidesk_api_key) setKey(data.movidesk_api_key);
       if (data?.sync_intervalo_minutos) setIntervalo(String(data.sync_intervalo_minutos));
     })();
@@ -44,9 +48,15 @@ function IntegracaoConfig() {
 
   const save = async () => {
     setSaving(true);
+    // Find current user's org via profiles
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setSaving(false); return toast.error("Sessão expirada"); }
+    const { data: prof, error: pErr } = await supabase
+      .from("profiles").select("organizacao_id").eq("id", user.id).single();
+    if (pErr || !prof?.organizacao_id) { setSaving(false); return toast.error(pErr?.message ?? "Organização não encontrada"); }
     const { error } = await supabase.from("configuracoes").update({
       movidesk_api_key: key, sync_intervalo_minutos: Number(intervalo),
-    }).neq("organizacao_id", "00000000-0000-0000-0000-000000000000");
+    }).eq("organizacao_id", prof.organizacao_id);
     setSaving(false);
     error ? toast.error(error.message) : toast.success("Configurações salvas");
   };

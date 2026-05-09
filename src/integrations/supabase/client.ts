@@ -29,6 +29,28 @@ function createSupabaseClient() {
 
 let _supabase: ReturnType<typeof createSupabaseClient> | undefined;
 
+// Inject Supabase auth token into TanStack server function fetches (/_serverFn/*)
+if (typeof window !== "undefined" && !(window as any).__lovableServerFnFetchPatched) {
+  (window as any).__lovableServerFnFetchPatched = true;
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+    try {
+      const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+      if (url && url.includes("/_serverFn/")) {
+        if (!_supabase) _supabase = createSupabaseClient();
+        const { data } = await _supabase.auth.getSession();
+        const token = data.session?.access_token;
+        if (token) {
+          const headers = new Headers(init?.headers || (input instanceof Request ? input.headers : undefined));
+          if (!headers.has("authorization")) headers.set("authorization", `Bearer ${token}`);
+          return originalFetch(input, { ...init, headers });
+        }
+      }
+    } catch {}
+    return originalFetch(input, init);
+  };
+}
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>, {
