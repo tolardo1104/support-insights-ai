@@ -37,7 +37,7 @@ function AnaliseIaPage() {
       <Card className="p-6 mb-6">
         <h3 className="font-semibold mb-4 flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" />Análise do período</h3>
         <div className="flex gap-3 flex-wrap mb-6">
-          <Select defaultValue="mes">
+          <Select value={periodo} onValueChange={(v: any) => setPeriodo(v)}>
             <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="semana">Última semana</SelectItem>
