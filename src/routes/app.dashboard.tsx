@@ -32,7 +32,10 @@ function Dashboard() {
   const sync = async () => {
     setSyncing(true);
     try {
-      const r = await syncFn({ data: { dias: 30 } });
+      const fim = new Date();
+      const inicio = new Date(Date.now() - 30 * 86400_000);
+      const fmt = (d: Date) => d.toISOString().slice(0, 10);
+      const r = await syncFn({ data: { dataInicio: fmt(inicio), dataFim: fmt(fim) } });
       r.ok ? toast.success(r.message) : toast.warning(r.message);
     } catch (e: any) { toast.error(e.message); }
     finally { setSyncing(false); }
