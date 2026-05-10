@@ -125,6 +125,10 @@ export type Database = {
           movidesk_api_key: string | null
           organizacao_id: string
           sync_intervalo_minutos: number | null
+          sync_periodo_fim: string | null
+          sync_periodo_inicio: string | null
+          sync_total_importado: number | null
+          sync_ultimo_em: string | null
         }
         Insert: {
           atualizado_em?: string
@@ -141,6 +145,10 @@ export type Database = {
           movidesk_api_key?: string | null
           organizacao_id: string
           sync_intervalo_minutos?: number | null
+          sync_periodo_fim?: string | null
+          sync_periodo_inicio?: string | null
+          sync_total_importado?: number | null
+          sync_ultimo_em?: string | null
         }
         Update: {
           atualizado_em?: string
@@ -157,6 +165,10 @@ export type Database = {
           movidesk_api_key?: string | null
           organizacao_id?: string
           sync_intervalo_minutos?: number | null
+          sync_periodo_fim?: string | null
+          sync_periodo_inicio?: string | null
+          sync_total_importado?: number | null
+          sync_ultimo_em?: string | null
         }
         Relationships: [
           {
@@ -372,6 +384,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sync_log: {
+        Row: {
+          executado_em: string
+          id: string
+          mensagem_erro: string | null
+          organizacao_id: string
+          periodo_fim: string | null
+          periodo_inicio: string | null
+          status: string
+          total_importado: number | null
+        }
+        Insert: {
+          executado_em?: string
+          id?: string
+          mensagem_erro?: string | null
+          organizacao_id: string
+          periodo_fim?: string | null
+          periodo_inicio?: string | null
+          status: string
+          total_importado?: number | null
+        }
+        Update: {
+          executado_em?: string
+          id?: string
+          mensagem_erro?: string | null
+          organizacao_id?: string
+          periodo_fim?: string | null
+          periodo_inicio?: string | null
+          status?: string
+          total_importado?: number | null
+        }
+        Relationships: []
       }
       tickets_cache: {
         Row: {
