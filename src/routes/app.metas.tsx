@@ -76,7 +76,7 @@ function MetaDialog({
   open: boolean; onOpenChange: (b: boolean) => void;
   initial: Partial<Meta> | null;
   atendentes: { id: string; nome: string }[];
-  onSave: (m: Partial<Meta>) => Promise<void>;
+  onSave: (m: Partial<Meta>) => Promise<unknown>;
 }) {
   const [metrica, setMetrica] = useState(initial?.metrica ?? "tickets_mes");
   const [valor, setValor] = useState<string>(String(initial?.valor_meta ?? ""));
