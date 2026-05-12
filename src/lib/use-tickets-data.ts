@@ -15,6 +15,9 @@ export type Ticket = {
   resolvido_em: string | null;
   tma_minutos: number | null;
   csat_nota: number | null;
+  tme_minutos: number | null;       // Tempo médio de espera (1ª resposta)
+  frt_minutos: number | null;       // First Response Time
+  abandonado: boolean | null;       // Se o ticket foi abandonado/sem resposta
 };
 
 export function useTickets(from?: string, to?: string) {
@@ -32,7 +35,7 @@ export function useTickets(from?: string, to?: string) {
 
       const { data, error } = await supabase
         .from("tickets_cache")
-        .select("id,movidesk_ticket_id,assunto,status,prioridade,categoria,cliente_id,cliente_nome,atendente_id,criado_em,resolvido_em,tma_minutos,csat_nota")
+        .select("id,movidesk_ticket_id,assunto,status,prioridade,categoria,cliente_id,cliente_nome,atendente_id,criado_em,resolvido_em,tma_minutos,csat_nota,tme_minutos,frt_minutos,abandonado")
         .gte("criado_em", `${dataInicio}T00:00:00.000Z`)
         .lte("criado_em", `${dataFim}T23:59:59.999Z`)
         .order("criado_em", { ascending: false })

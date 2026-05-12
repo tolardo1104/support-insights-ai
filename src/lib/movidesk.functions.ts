@@ -6,7 +6,7 @@ const MOVIDESK_BASE = "https://api.movidesk.com/public/v1";
 const SELECT_FIELDS =
   "id,type,subject,category,urgency,status,baseStatus,origin,createdDate,resolvedIn,closedIn,lastUpdate,ownerTeam,tags,csat";
 const EXPAND_FIELDS =
-  "owner($select=id,businessName,email),clients($select=id,businessName,email)";
+  "owner($select=id,businessName,email),clients($select=id,businessName,email),actions($select=id,type,createdDate,createdBy;$top=5;$orderby=createdDate asc)";
 
 function tratarErroMovidesk(status: number, body: any): string {
   if (status === 400) return `Campo inválido na query Movidesk. ${body?.message ?? ""}`.trim();
@@ -129,14 +129,25 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
       }
     }
 
-    // Upsert tickets
-    let count = 0;
     for (const t of tickets) {
       const ownerMovideskId = t.owner?.id ? String(t.owner.id) : null;
       const atendenteId = ownerMovideskId ? atendentesByMovideskId.get(ownerMovideskId) ?? null : null;
       const cliente = Array.isArray(t.clients) ? t.clients[0] : null;
       const tmaHoras = calcularTmaHoras(t.createdDate, t.resolvedIn);
       const tmaMin = tmaHoras !== null ? Math.round(tmaHoras * 60) : null;
+
+      // Calcular FRT: tempo até primeira ação do atendente
+      let frtMinutos: number | null = null;
+      if (Array.isArray(t.actions) && t.createdDate) {
+        const primeiraResposta = t.actions.find(
+          (a: any) => a.type === 2 // type 2 = resposta do atendente na Movidesk
+        );
+        if (primeiraResposta?.createdDate) {
+          const diff = new Date(primeiraResposta.createdDate).getTime()
+            - new Date(t.createdDate).getTime();
+          frtMinutos = diff > 0 ? Math.round(diff / 60000) : null;
+        }
+      }
 
       const payload = {
         organizacao_id: orgId,
@@ -152,6 +163,9 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
         resolvido_em: t.resolvedIn ?? null,
         tma_minutos: tmaMin,
         csat_nota: typeof t.csat === "number" ? t.csat : null,
+        tme_minutos: frtMinutos,   // TME = tempo médio espera = FRT
+        frt_minutos: frtMinutos,   // FRT = First Response Time
+        abandonado: t.baseStatus === "Cancelado" || t.baseStatus === "Abandonado" || false,
         sincronizado_em: new Date().toISOString(),
       };
 

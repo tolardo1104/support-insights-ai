@@ -11,7 +11,7 @@ import {
 } from "recharts";
 import {
   RefreshCw, Sparkles, TicketIcon, Clock, Smile, Target,
-  CheckCircle, Loader2, PhoneOff,
+  CheckCircle, Loader2, PhoneOff, Timer, PhoneCall
 } from "lucide-react";
 import { toast } from "sonner";
 import { useMemo, useState, useEffect } from "react";
@@ -92,15 +92,43 @@ function Dashboard() {
   const metricas = useMemo(() => {
     const abertos = tickets.filter((t) => !t.resolvido_em).length;
     const resolvidos = tickets.filter((t) => !!t.resolvido_em).length;
+
     const tmas = tickets.map((t) => t.tma_minutos).filter((v): v is number => v != null);
     const tmaMedio = tmas.length
       ? Math.round((tmas.reduce((a, b) => a + b, 0) / tmas.length / 60) * 10) / 10 : 0;
+
     const csats = tickets.map((t) => t.csat_nota).filter((v): v is number => v != null);
     const csatMedio = csats.length
       ? Math.round(csats.reduce((a, b) => a + b, 0) / csats.length) : 0;
+
     const fcr = tickets.length
       ? Math.round((resolvidos / Math.max(tickets.length, 1)) * 100) : 0;
-    return { abertos, resolvidos, tmaMedio, csatMedio, fcr, total: tickets.length };
+
+    // TME — Tempo médio de espera (1ª resposta)
+    const tmes = tickets.map((t) => t.tme_minutos).filter((v): v is number => v != null);
+    const tmeMedio = tmes.length
+      ? Math.round(tmes.reduce((a, b) => a + b, 0) / tmes.length) : 0;
+    const tmeMedioH = tmeMedio > 60
+      ? `${Math.round((tmeMedio / 60) * 10) / 10}h`
+      : `${tmeMedio}min`;
+
+    // FRT — First Response Time médio
+    const frts = tickets.map((t) => t.frt_minutos).filter((v): v is number => v != null);
+    const frtMedio = frts.length
+      ? Math.round(frts.reduce((a, b) => a + b, 0) / frts.length) : 0;
+    const frtMedioH = frtMedio > 60
+      ? `${Math.round((frtMedio / 60) * 10) / 10}h`
+      : `${frtMedio}min`;
+
+    // Taxa de abandono
+    const abandonados = tickets.filter((t) => t.abandonado).length;
+    const taxaAbandono = tickets.length
+      ? Math.round((abandonados / tickets.length) * 100) : 0;
+
+    return {
+      abertos, resolvidos, tmaMedio, csatMedio, fcr, total: tickets.length,
+      tmeMedioH, frtMedioH, taxaAbandono,
+    };
   }, [tickets]);
 
   const ticketsPorDia = useMemo(() => {
@@ -240,13 +268,25 @@ function Dashboard() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-        <MetricCard label="Total" value={metricas.total} icon={<TicketIcon className="h-4 w-4" />} />
-        <MetricCard label="Abertos" value={metricas.abertos} icon={<TicketIcon className="h-4 w-4" />} />
-        <MetricCard label="Resolvidos" value={metricas.resolvidos} icon={<CheckCircle className="h-4 w-4" />} />
-        <MetricCard label="TMA médio" value={metricas.tmaMedio} suffix="h" icon={<Clock className="h-4 w-4" />} hint="Tempo médio de atendimento" />
-        <MetricCard label="CSAT" value={metricas.csatMedio} suffix="%" icon={<Smile className="h-4 w-4" />} />
-        <MetricCard label="FCR" value={metricas.fcr} suffix="%" icon={<Target className="h-4 w-4" />} hint="Resolução no 1º contato" />
+      {/* LINHA 1 — volume */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+        <MetricCard label="Tickets abertos" value={loading ? "—" : metricas.abertos} icon={<TicketIcon className="h-4 w-4" />} />
+        <MetricCard label="Resolvidos" value={loading ? "—" : metricas.resolvidos} icon={<CheckCircle className="h-4 w-4" />} />
+        <MetricCard label="Total no período" value={loading ? "—" : metricas.total} icon={<TicketIcon className="h-4 w-4" />} />
+      </div>
+
+      {/* LINHA 2 — qualidade */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+        <MetricCard label="TMA médio" value={loading ? "—" : metricas.tmaMedio} suffix="h" icon={<Clock className="h-4 w-4" />} hint="Tempo médio de atendimento" />
+        <MetricCard label="CSAT médio" value={loading ? "—" : metricas.csatMedio} suffix="%" icon={<Smile className="h-4 w-4" />} />
+        <MetricCard label="FCR" value={loading ? "—" : metricas.fcr} suffix="%" icon={<Target className="h-4 w-4" />} hint="Resolução no 1º contato" />
+      </div>
+
+      {/* LINHA 3 — tempo e abandono */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+        <MetricCard label="TME" value={loading ? "—" : metricas.tmeMedioH} icon={<Timer className="h-4 w-4" />} hint="Tempo médio de espera (1ª resposta)" />
+        <MetricCard label="FRT" value={loading ? "—" : metricas.frtMedioH} icon={<PhoneCall className="h-4 w-4" />} hint="First Response Time" />
+        <MetricCard label="Taxa de abandono" value={loading ? "—" : metricas.taxaAbandono} suffix="%" icon={<PhoneOff className="h-4 w-4" />} hint="Tickets cancelados/sem resposta" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">

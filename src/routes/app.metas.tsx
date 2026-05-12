@@ -26,11 +26,13 @@ type Meta = {
 };
 
 const METRICAS: Record<string, { label: string; unidade: string; inverso: boolean }> = {
-  tickets_mes: { label: "Tickets / mês", unidade: "", inverso: false },
-  tma_horas: { label: "TMA máximo", unidade: "h", inverso: true },
-  csat: { label: "CSAT mínimo", unidade: "%", inverso: false },
-  resolucao_primeiro_contato: { label: "Resolução 1º contato", unidade: "%", inverso: false },
-  primeira_resposta: { label: "1ª resposta máx.", unidade: "h", inverso: true },
+  tickets_mes:               { label: "Tickets / mês",           unidade: "",  inverso: false },
+  tma_horas:                 { label: "TMA máximo",              unidade: "h", inverso: true  },
+  csat:                      { label: "CSAT mínimo",             unidade: "%", inverso: false },
+  resolucao_primeiro_contato:{ label: "Resolução 1º contato",    unidade: "%", inverso: false },
+  primeira_resposta:         { label: "FRT máximo (1ª resposta)",unidade: "h", inverso: true  },
+  tme_minutos:               { label: "TME máximo (espera)",     unidade: "min", inverso: true },
+  taxa_abandono:             { label: "Taxa abandono máx.",      unidade: "%", inverso: true  },
 };
 
 function corPct(pct: number) {
@@ -174,12 +176,19 @@ function MetasPage() {
     const total = tickets.length;
     const tmaArr = tickets.map((t) => t.tma_minutos).filter((v): v is number => v != null);
     const csatArr = tickets.map((t) => t.csat_nota).filter((v): v is number => v != null);
+    
+    const frts = tickets.map((t) => t.frt_minutos).filter((v): v is number => v != null);
+    const tmes = tickets.map((t) => t.tme_minutos).filter((v): v is number => v != null);
+    const abandonados = tickets.filter((t) => t.abandonado).length;
+
     return {
       tickets_mes: total,
       tma_horas: tmaArr.length ? Math.round((tmaArr.reduce((a, b) => a + b, 0) / tmaArr.length / 60) * 10) / 10 : 0,
       csat: csatArr.length ? Math.round(csatArr.reduce((a, b) => a + b, 0) / csatArr.length) : 0,
       resolucao_primeiro_contato: 0,
-      primeira_resposta: 0,
+      primeira_resposta: frts.length ? Math.round((frts.reduce((a,b) => a+b, 0) / frts.length / 60) * 10) / 10 : 0,
+      tme_minutos: tmes.length ? Math.round(tmes.reduce((a,b) => a+b, 0) / tmes.length) : 0,
+      taxa_abandono: total ? Math.round((abandonados / total) * 100) : 0,
     } as Record<string, number>;
   }, [tickets]);
 
@@ -187,10 +196,16 @@ function MetasPage() {
     const map = new Map<string, Record<string, number>>();
     for (const t of tickets) {
       if (!t.atendente_id) continue;
-      const cur = map.get(t.atendente_id) ?? { tickets_mes: 0, _tmaSum: 0, _tmaN: 0, _csatSum: 0, _csatN: 0 } as any;
+      const cur = map.get(t.atendente_id) ?? { 
+        tickets_mes: 0, _tmaSum: 0, _tmaN: 0, _csatSum: 0, _csatN: 0, 
+        _frtSum: 0, _frtN: 0, _tmeSum: 0, _tmeN: 0, abandonados: 0 
+      } as any;
       cur.tickets_mes += 1;
       if (t.tma_minutos != null) { cur._tmaSum += t.tma_minutos; cur._tmaN += 1; }
       if (t.csat_nota != null) { cur._csatSum += t.csat_nota; cur._csatN += 1; }
+      if (t.frt_minutos != null) { cur._frtSum += t.frt_minutos; cur._frtN += 1; }
+      if (t.tme_minutos != null) { cur._tmeSum += t.tme_minutos; cur._tmeN += 1; }
+      if (t.abandonado) { cur.abandonados += 1; }
       map.set(t.atendente_id, cur);
     }
     const out: Record<string, Record<string, number>> = {};
@@ -200,7 +215,9 @@ function MetasPage() {
         tma_horas: v._tmaN ? Math.round((v._tmaSum / v._tmaN / 60) * 10) / 10 : 0,
         csat: v._csatN ? Math.round(v._csatSum / v._csatN) : 0,
         resolucao_primeiro_contato: 0,
-        primeira_resposta: 0,
+        primeira_resposta: v._frtN ? Math.round((v._frtSum / v._frtN / 60) * 10) / 10 : 0,
+        tme_minutos: v._tmeN ? Math.round(v._tmeSum / v._tmeN) : 0,
+        taxa_abandono: v.tickets_mes ? Math.round((v.abandonados / v.tickets_mes) * 100) : 0,
       };
     });
     return out;
@@ -249,6 +266,21 @@ function MetasPage() {
           </Button>
         }
       />
+      <Card className="p-4 mb-6">
+        <details>
+          <summary className="text-sm font-medium cursor-pointer select-none">
+            📖 O que significa cada métrica?
+          </summary>
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-muted-foreground">
+            <div><strong>TMA</strong> — Tempo Médio de Atendimento: duração total do ticket</div>
+            <div><strong>CSAT</strong> — Customer Satisfaction: nota de satisfação do cliente</div>
+            <div><strong>FCR</strong> — First Call Resolution: resolvido no 1º contato</div>
+            <div><strong>FRT</strong> — First Response Time: tempo até a 1ª resposta do atendente</div>
+            <div><strong>TME</strong> — Tempo Médio de Espera: mesmo que FRT</div>
+            <div><strong>Taxa de abandono</strong> — % de tickets cancelados sem resolução</div>
+          </div>
+        </details>
+      </Card>
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="equipe">Equipe</TabsTrigger>
