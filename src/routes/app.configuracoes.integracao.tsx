@@ -135,6 +135,18 @@ function IntegracaoConfig() {
   return (
     <div className="space-y-6">
       <Card className="p-6">
+        <h3 className="font-semibold mb-1">Sistema de suporte</h3>
+        <p className="text-sm text-muted-foreground mb-4">Selecione qual sistema deseja configurar.</p>
+        <Select value={sistema} onValueChange={setSistema}>
+          <SelectTrigger className="max-w-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="movidesk">Movidesk</SelectItem>
+            <SelectItem value="outro" disabled>Outro sistema (em breve)</SelectItem>
+          </SelectContent>
+        </Select>
+      </Card>
+
+      <Card className="p-6">
         <h3 className="font-semibold mb-1">Integração com Movidesk</h3>
         <p className="text-sm text-muted-foreground mb-5">Conecte sua conta para sincronizar tickets automaticamente.</p>
         <div className="space-y-4">
