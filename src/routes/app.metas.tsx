@@ -168,9 +168,6 @@ function MetasPage() {
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
-  useEffect(() => {
-    if (atendentes.length && !atendenteSel) setAtendenteSel(atendentes[0].id);
-  }, [atendentes, atendenteSel]);
 
   // Aggregate atual values
   const atuaisEquipe = useMemo(() => {
