@@ -1,7 +1,6 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
-import { DemoBanner } from "@/components/demo-banner";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 
