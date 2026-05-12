@@ -158,7 +158,7 @@ function MetasPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Partial<Meta> | null>(null);
   const [tab, setTab] = useState("equipe");
-  const [atendenteSel, setAtendenteSel] = useState<string>("");
+  const [atendenteSel, setAtendenteSel] = useState<string>("__all__");
 
   async function load() {
     setLoading(true);
