@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const MOVIDESK_BASE = "https://api.movidesk.com/public/v1";
 const SELECT_FIELDS =
-  "id,type,subject,category,urgency,status,baseStatus,origin,createdDate,resolvedIn,closedIn,lastUpdate,ownerTeam,tags";
+  "id,type,subject,category,urgency,status,baseStatus,origin,createdDate,resolvedIn,closedIn,lastUpdate,ownerTeam,tags,csat";
 const EXPAND_FIELDS =
   "owner($select=id,businessName,email),clients($select=id,businessName,email)";
 
