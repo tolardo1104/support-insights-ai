@@ -244,7 +244,7 @@ function MetasPage() {
         title="Metas"
         description="Acompanhe o desempenho da equipe e por atendente."
         actions={
-          <Button onClick={() => { setEditing({ atendente_id: tab === "atendente" ? atendenteSel : null }); setDialogOpen(true); }}>
+          <Button onClick={() => { setEditing({ atendente_id: tab === "atendente" && atendenteSel !== "__all__" ? atendenteSel : null }); setDialogOpen(true); }}>
             <Plus className="h-4 w-4 mr-1" />Nova meta
           </Button>
         }
