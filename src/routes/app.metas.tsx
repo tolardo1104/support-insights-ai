@@ -152,7 +152,7 @@ function MetaDialog({
 
 function MetasPage() {
   const atendentes = useAtendentes();
-  const { tickets, loading: loadingTickets } = useTickets(30);
+  const { tickets, loading: loadingTickets } = useTickets();
   const [metas, setMetas] = useState<Meta[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
