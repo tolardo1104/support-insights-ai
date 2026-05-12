@@ -21,18 +21,29 @@ function getApiKey(cfg: any): string {
 /** Analyze the period: aggregate tickets and generate insights. */
 export const analyzePeriod = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { periodo?: "semana" | "mes" | "trimestre" }) =>
-    z.object({ periodo: z.enum(["semana", "mes", "trimestre"]).default("mes") }).parse(d),
+  .inputValidator((d: { periodo?: "semana" | "mes" | "trimestre"; dataInicio?: string; dataFim?: string }) =>
+    z.object({
+      periodo: z.enum(["semana", "mes", "trimestre"]).default("mes"),
+      dataInicio: z.string().optional(),
+      dataFim: z.string().optional(),
+    }).parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { orgId, cfg } = await getOrgConfig(supabase, userId);
 
     const dias = data.periodo === "semana" ? 7 : data.periodo === "trimestre" ? 90 : 30;
-    const since = new Date(Date.now() - dias * 86400_000).toISOString();
+    const since = data.dataInicio
+      ? new Date(`${data.dataInicio}T00:00:00.000Z`).toISOString()
+      : new Date(Date.now() - dias * 86400_000).toISOString();
+    const until = data.dataFim
+      ? new Date(`${data.dataFim}T23:59:59.999Z`).toISOString()
+      : new Date().toISOString();
 
     const { data: tickets } = await supabase
-      .from("tickets_cache").select("*").eq("organizacao_id", orgId).gte("criado_em", since).limit(cfg?.ia_tickets_analisados ?? 100);
+      .from("tickets_cache").select("*").eq("organizacao_id", orgId)
+      .gte("criado_em", since).lte("criado_em", until)
+      .limit(cfg?.ia_tickets_analisados ?? 100);
 
     if (!tickets?.length) {
       return { ok: false, resultado: "Nenhum ticket encontrado no período. Sincronize com a Movidesk primeiro." };
@@ -60,7 +71,7 @@ export const analyzePeriod = createServerFn({ method: "POST" })
       organizacao_id: orgId, tipo: "geral",
       ia_provedor: cfg?.ia_provedor, ia_modelo: cfg?.ia_modelo,
       resultado: { texto: text, totais } as any,
-      periodo_inicio: since.slice(0, 10), periodo_fim: new Date().toISOString().slice(0, 10),
+      periodo_inicio: since.slice(0, 10), periodo_fim: until.slice(0, 10),
     });
 
     return { ok: true, resultado: text };

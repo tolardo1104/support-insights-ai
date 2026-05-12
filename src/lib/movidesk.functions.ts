@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const MOVIDESK_BASE = "https://api.movidesk.com/public/v1";
 const SELECT_FIELDS =
-  "id,type,subject,category,urgency,status,baseStatus,origin,createdDate,resolvedIn,closedIn,lastUpdate,ownerTeam,tags";
+  "id,type,subject,category,urgency,status,baseStatus,origin,createdDate,resolvedIn,closedIn,lastUpdate,ownerTeam,tags,csat";
 const EXPAND_FIELDS =
   "owner($select=id,businessName,email),clients($select=id,businessName,email)";
 
@@ -151,6 +151,7 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
         criado_em: t.createdDate ?? null,
         resolvido_em: t.resolvedIn ?? null,
         tma_minutos: tmaMin,
+        csat_nota: typeof t.csat === "number" ? t.csat : null,
         sincronizado_em: new Date().toISOString(),
       };
 

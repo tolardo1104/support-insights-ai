@@ -25,12 +25,13 @@ function IntegracaoConfig() {
   const [show, setShow] = useState(false);
   const [key, setKey] = useState("");
   const [intervalo, setIntervalo] = useState("60");
+  const [sistema, setSistema] = useState("movidesk");
   const [testing, setTesting] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const today = new Date();
-  const [dataInicio, setDataInicio] = useState<Date>(subDays(today, 30));
+  const [dataInicio, setDataInicio] = useState<Date>(startOfMonth(today));
   const [dataFim, setDataFim] = useState<Date>(today);
   const [logs, setLogs] = useState<any[]>([]);
 
@@ -42,33 +43,58 @@ function IntegracaoConfig() {
       .from("sync_log")
       .select("*")
       .order("executado_em", { ascending: false })
-      .limit(10);
+      .limit(5);
     setLogs(data ?? []);
   };
+
+  async function getOrgId() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+    const { data: prof } = await supabase
+      .from("profiles").select("organizacao_id").eq("id", user.id).single();
+    return prof?.organizacao_id ?? null;
+  }
 
   useEffect(() => {
     (async () => {
       const { data, error } = await supabase
         .from("configuracoes")
-        .select("movidesk_api_key,sync_intervalo_minutos")
+        .select("movidesk_api_key,sync_intervalo_minutos,sync_periodo_inicio,sync_periodo_fim")
         .maybeSingle();
       if (error) { toast.error(error.message); return; }
       if (data?.movidesk_api_key) setKey(data.movidesk_api_key);
       if (data?.sync_intervalo_minutos) setIntervalo(String(data.sync_intervalo_minutos));
+      const hoje = new Date();
+      const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+      setDataInicio(data?.sync_periodo_inicio ? new Date(`${data.sync_periodo_inicio}T00:00:00`) : inicioMes);
+      setDataFim(data?.sync_periodo_fim ? new Date(`${data.sync_periodo_fim}T00:00:00`) : hoje);
       await loadLogs();
     })();
   }, []);
 
-  const aplicarAtalho = (tipo: string) => {
+  const persistirPeriodo = async (ini: Date, fim: Date) => {
+    const orgId = await getOrgId();
+    if (!orgId) return;
+    await supabase.from("configuracoes").update({
+      sync_periodo_inicio: fmt(ini),
+      sync_periodo_fim: fmt(fim),
+    }).eq("organizacao_id", orgId);
+  };
+
+  const aplicarAtalho = async (tipo: string) => {
     const now = new Date();
-    if (tipo === "hoje") { setDataInicio(now); setDataFim(now); }
-    else if (tipo === "7d") { setDataInicio(subDays(now, 7)); setDataFim(now); }
-    else if (tipo === "30d") { setDataInicio(subDays(now, 30)); setDataFim(now); }
-    else if (tipo === "mes") { setDataInicio(startOfMonth(now)); setDataFim(now); }
+    let ini = now, fim = now;
+    if (tipo === "hoje") { ini = now; fim = now; }
+    else if (tipo === "7d") { ini = subDays(now, 7); fim = now; }
+    else if (tipo === "30d") { ini = subDays(now, 30); fim = now; }
+    else if (tipo === "mes") { ini = startOfMonth(now); fim = now; }
     else if (tipo === "anterior") {
       const prev = subMonths(now, 1);
-      setDataInicio(startOfMonth(prev)); setDataFim(endOfMonth(prev));
+      ini = startOfMonth(prev); fim = endOfMonth(prev);
     }
+    setDataInicio(ini);
+    setDataFim(fim);
+    await persistirPeriodo(ini, fim);
   };
 
   const test = async () => {
@@ -108,6 +134,18 @@ function IntegracaoConfig() {
 
   return (
     <div className="space-y-6">
+      <Card className="p-6">
+        <h3 className="font-semibold mb-1">Sistema de suporte</h3>
+        <p className="text-sm text-muted-foreground mb-4">Selecione qual sistema deseja configurar.</p>
+        <Select value={sistema} onValueChange={setSistema}>
+          <SelectTrigger className="max-w-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="movidesk">Movidesk</SelectItem>
+            <SelectItem value="outro" disabled>Outro sistema (em breve)</SelectItem>
+          </SelectContent>
+        </Select>
+      </Card>
+
       <Card className="p-6">
         <h3 className="font-semibold mb-1">Integração com Movidesk</h3>
         <p className="text-sm text-muted-foreground mb-5">Conecte sua conta para sincronizar tickets automaticamente.</p>

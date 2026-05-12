@@ -17,24 +17,30 @@ export type Ticket = {
   csat_nota: number | null;
 };
 
-export function useTickets(periodoDias = 30) {
+export function useTickets(from?: string, to?: string) {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const since = new Date(Date.now() - periodoDias * 86400_000).toISOString();
+      const hoje = new Date();
+      const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1)
+        .toISOString().slice(0, 10);
+      const dataInicio = from ?? inicioMes;
+      const dataFim = to ?? hoje.toISOString().slice(0, 10);
+
       const { data, error } = await supabase
         .from("tickets_cache")
         .select("id,movidesk_ticket_id,assunto,status,prioridade,categoria,cliente_id,cliente_nome,atendente_id,criado_em,resolvido_em,tma_minutos,csat_nota")
-        .gte("criado_em", since)
+        .gte("criado_em", `${dataInicio}T00:00:00.000Z`)
+        .lte("criado_em", `${dataFim}T23:59:59.999Z`)
         .order("criado_em", { ascending: false })
         .limit(2000);
       if (!error && data) setTickets(data as any);
       setLoading(false);
     })();
-  }, [periodoDias]);
+  }, [from, to]);
 
   return { tickets, loading };
 }

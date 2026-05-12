@@ -40,13 +40,9 @@ function AtendentesPage() {
   const navigate = useNavigate();
   const [from, setFrom] = useState(startOfMonth());
   const [to, setTo] = useState(todayISO());
-  const periodoDias = useMemo(() => {
-    const ms = new Date(to).getTime() - new Date(from).getTime();
-    return Math.max(1, Math.ceil(ms / 86400_000) + 1);
-  }, [from, to]);
 
   const atendentes = useAtendentes();
-  const { tickets, loading } = useTickets(periodoDias);
+  const { tickets, loading } = useTickets(from, to);
 
   const [equipe, setEquipe] = useState<string>("__all__");
   const [statusSel, setStatusSel] = useState<Record<StatusKey, boolean>>({
