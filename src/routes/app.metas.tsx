@@ -283,21 +283,50 @@ function MetasPage() {
                   <Select value={atendenteSel} onValueChange={setAtendenteSel}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="__all__">Todos os atendentes</SelectItem>
                       {atendentes.map((a) => <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-6">
                   {isLoading ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20" />)
-                    : metasAtendente.length === 0 ? (
+                    : atendenteSel === "__all__" ? (
+                      (() => {
+                        const grupos = atendentes
+                          .map((a) => ({ a, metas: metas.filter((m) => m.atendente_id === a.id) }))
+                          .filter((g) => g.metas.length > 0);
+                        if (grupos.length === 0) {
+                          return (
+                            <div className="text-center py-6 text-sm text-muted-foreground">
+                              Nenhuma meta individual cadastrada.
+                            </div>
+                          );
+                        }
+                        return grupos.map(({ a, metas: ms }) => (
+                          <div key={a.id} className="space-y-2">
+                            <h4 className="text-sm font-semibold text-muted-foreground border-b pb-1">{a.nome}</h4>
+                            <div className="space-y-3">
+                              {ms.map((m) => (
+                                <MetaRow key={m.id} m={m} atual={(atuaisPorAtendente[a.id] ?? {})[m.metrica] ?? 0}
+                                  onEdit={(x) => { setEditing(x); setDialogOpen(true); }} onDelete={remove} />
+                              ))}
+                            </div>
+                          </div>
+                        ));
+                      })()
+                    ) : metasAtendente.length === 0 ? (
                       <div className="text-center py-6 text-sm text-muted-foreground">
                         Nenhuma meta individual.
                         <div className="mt-3"><Button size="sm" onClick={() => { setEditing({ atendente_id: atendenteSel }); setDialogOpen(true); }}>Criar meta</Button></div>
                       </div>
-                    ) : metasAtendente.map((m) => (
-                      <MetaRow key={m.id} m={m} atual={(atuaisPorAtendente[atendenteSel] ?? {})[m.metrica] ?? 0}
-                        onEdit={(x) => { setEditing(x); setDialogOpen(true); }} onDelete={remove} />
-                    ))}
+                    ) : (
+                      <div className="space-y-3">
+                        {metasAtendente.map((m) => (
+                          <MetaRow key={m.id} m={m} atual={(atuaisPorAtendente[atendenteSel] ?? {})[m.metrica] ?? 0}
+                            onEdit={(x) => { setEditing(x); setDialogOpen(true); }} onDelete={remove} />
+                        ))}
+                      </div>
+                    )}
                 </div>
               </>
             )}
