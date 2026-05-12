@@ -151,6 +151,7 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
         criado_em: t.createdDate ?? null,
         resolvido_em: t.resolvedIn ?? null,
         tma_minutos: tmaMin,
+        csat_nota: typeof t.csat === "number" ? t.csat : null,
         sincronizado_em: new Date().toISOString(),
       };
 
