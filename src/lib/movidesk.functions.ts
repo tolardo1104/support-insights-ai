@@ -129,6 +129,7 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
       }
     }
 
+    let count = 0;
     for (const t of tickets) {
       const ownerMovideskId = t.owner?.id ? String(t.owner.id) : null;
       const atendenteId = ownerMovideskId ? atendentesByMovideskId.get(ownerMovideskId) ?? null : null;
@@ -149,6 +150,20 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
         }
       }
 
+      // Extrair NPS/CSAT da pesquisa de satisfação Movidesk
+      let csatNota: number | null = null;
+      if (Array.isArray(t.satisfactionSurveyResponses) && t.satisfactionSurveyResponses.length > 0) {
+        const r = t.satisfactionSurveyResponses[0];
+        const candidato =
+          r?.npsScore ??
+          r?.satisfactionWithService ??
+          r?.satisfactionWithSupport ??
+          r?.satisfactionWithExperience ??
+          r?.score ??
+          null;
+        if (typeof candidato === "number") csatNota = candidato;
+      }
+
       const payload = {
         organizacao_id: orgId,
         movidesk_ticket_id: String(t.id),
@@ -162,9 +177,9 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
         criado_em: t.createdDate ?? null,
         resolvido_em: t.resolvedIn ?? null,
         tma_minutos: tmaMin,
-        csat_nota: typeof t.csat === "number" ? t.csat : null,
-        tme_minutos: frtMinutos,   // TME = tempo médio espera = FRT
-        frt_minutos: frtMinutos,   // FRT = First Response Time
+        csat_nota: csatNota,
+        tme_minutos: frtMinutos,
+        frt_minutos: frtMinutos,
         abandonado: t.baseStatus === "Cancelado" || t.baseStatus === "Abandonado" || false,
         sincronizado_em: new Date().toISOString(),
       };
