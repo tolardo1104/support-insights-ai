@@ -423,6 +423,7 @@ export type Database = {
           abandonado: boolean | null
           assunto: string | null
           atendente_id: string | null
+          atualizado_em: string | null
           categoria: string | null
           cliente_id: string | null
           cliente_nome: string | null
@@ -434,6 +435,8 @@ export type Database = {
           movidesk_ticket_id: string | null
           organizacao_id: string
           prioridade: string | null
+          reaberto: boolean | null
+          reaberto_em: string | null
           resolvido_em: string | null
           sincronizado_em: string
           status: string | null
@@ -444,6 +447,7 @@ export type Database = {
           abandonado?: boolean | null
           assunto?: string | null
           atendente_id?: string | null
+          atualizado_em?: string | null
           categoria?: string | null
           cliente_id?: string | null
           cliente_nome?: string | null
@@ -455,6 +459,8 @@ export type Database = {
           movidesk_ticket_id?: string | null
           organizacao_id: string
           prioridade?: string | null
+          reaberto?: boolean | null
+          reaberto_em?: string | null
           resolvido_em?: string | null
           sincronizado_em?: string
           status?: string | null
@@ -465,6 +471,7 @@ export type Database = {
           abandonado?: boolean | null
           assunto?: string | null
           atendente_id?: string | null
+          atualizado_em?: string | null
           categoria?: string | null
           cliente_id?: string | null
           cliente_nome?: string | null
@@ -476,6 +483,8 @@ export type Database = {
           movidesk_ticket_id?: string | null
           organizacao_id?: string
           prioridade?: string | null
+          reaberto?: boolean | null
+          reaberto_em?: string | null
           resolvido_em?: string | null
           sincronizado_em?: string
           status?: string | null
