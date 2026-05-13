@@ -102,47 +102,47 @@ function Dashboard() {
     }
   }
 
-  const metricas = useMemo(() => {
-    const abertos = tickets.filter((t) => !t.resolvido_em).length;
-    const resolvidos = tickets.filter((t) => !!t.resolvido_em).length;
+  function calcMetricas(list: Ticket[]) {
+    const abertos = list.filter((t) => !t.resolvido_em).length;
+    const resolvidos = list.filter((t) => !!t.resolvido_em).length;
+    const reabertos = list.filter((t) => t.reaberto).length;
 
-    const tmas = tickets.map((t) => t.tma_minutos).filter((v): v is number => v != null);
+    const tmas = list.map((t) => t.tma_minutos).filter((v): v is number => v != null);
     const tmaMedio = tmas.length
       ? Math.round((tmas.reduce((a, b) => a + b, 0) / tmas.length / 60) * 10) / 10 : 0;
 
-    const csats = tickets.map((t) => t.csat_nota).filter((v): v is number => v != null);
+    const csats = list.map((t) => t.csat_nota).filter((v): v is number => v != null);
     const csatMedio = csats.length
       ? Math.round(csats.reduce((a, b) => a + b, 0) / csats.length) : 0;
 
-    const fcr = tickets.length
-      ? Math.round((resolvidos / Math.max(tickets.length, 1)) * 100) : 0;
+    const fcr = list.length
+      ? Math.round((resolvidos / Math.max(list.length, 1)) * 100) : 0;
 
-    // TME — Tempo médio de espera (1ª resposta)
-    const tmes = tickets.map((t) => t.tme_minutos).filter((v): v is number => v != null);
-    const tmeMedio = tmes.length
-      ? Math.round(tmes.reduce((a, b) => a + b, 0) / tmes.length) : 0;
-    const tmeMedioH = tmeMedio > 60
-      ? `${Math.round((tmeMedio / 60) * 10) / 10}h`
-      : `${tmeMedio}min`;
+    const tmes = list.map((t) => t.tme_minutos).filter((v): v is number => v != null);
+    const tmeMedio = tmes.length ? Math.round(tmes.reduce((a, b) => a + b, 0) / tmes.length) : 0;
 
-    // FRT — First Response Time médio
-    const frts = tickets.map((t) => t.frt_minutos).filter((v): v is number => v != null);
-    const frtMedio = frts.length
-      ? Math.round(frts.reduce((a, b) => a + b, 0) / frts.length) : 0;
-    const frtMedioH = frtMedio > 60
-      ? `${Math.round((frtMedio / 60) * 10) / 10}h`
-      : `${frtMedio}min`;
+    const frts = list.map((t) => t.frt_minutos).filter((v): v is number => v != null);
+    const frtMedio = frts.length ? Math.round(frts.reduce((a, b) => a + b, 0) / frts.length) : 0;
 
-    // Taxa de abandono
-    const abandonados = tickets.filter((t) => t.abandonado).length;
-    const taxaAbandono = tickets.length
-      ? Math.round((abandonados / tickets.length) * 100) : 0;
+    const abandonados = list.filter((t) => t.abandonado).length;
+    const taxaAbandono = list.length ? Math.round((abandonados / list.length) * 100) : 0;
 
     return {
-      abertos, resolvidos, tmaMedio, csatMedio, fcr, total: tickets.length,
-      tmeMedioH, frtMedioH, taxaAbandono,
+      abertos, resolvidos, reabertos, total: list.length,
+      tmaMedio, csatMedio, fcr,
+      tmeMedio, frtMedio, taxaAbandono,
     };
-  }, [tickets]);
+  }
+
+  const metricas = useMemo(() => calcMetricas(tickets), [tickets]);
+  const metricasPrev = useMemo(() => calcMetricas(ticketsPrev), [ticketsPrev]);
+
+  function trend(atual: number, anterior: number): number | null {
+    if (!anterior || !isFinite(anterior)) return null;
+    return Math.round(((atual - anterior) / anterior) * 100);
+  }
+
+  const fmtTempo = (m: number) => m > 60 ? `${Math.round((m / 60) * 10) / 10}h` : `${m}min`;
 
   const ticketsPorDia = useMemo(() => {
     const buckets = new Map<string, number>();
