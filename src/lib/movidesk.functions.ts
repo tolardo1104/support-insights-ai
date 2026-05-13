@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const MOVIDESK_BASE = "https://api.movidesk.com/public/v1";
 const SELECT_FIELDS =
-  "id,type,subject,category,urgency,status,baseStatus,origin,createdDate,resolvedIn,closedIn,lastUpdate,ownerTeam,tags";
+  "id,type,subject,category,urgency,status,baseStatus,origin,createdDate,resolvedIn,closedIn,lastUpdate,reopenedIn,ownerTeam,tags";
 const EXPAND_FIELDS =
   "owner($select=id,businessName,email),clients($select=id,businessName,email),actions($select=id,type,createdDate,createdBy;$top=5;$orderby=createdDate asc),satisfactionSurveyResponses";
 
@@ -69,7 +69,9 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
     const PAGE_SIZE = 100;
     let skip = 0;
     const tickets: any[] = [];
-    const filter = `createdDate ge ${data.dataInicio}T00:00:00.000z and createdDate le ${data.dataFim}T23:59:59.000z`;
+    const ini = `${data.dataInicio}T00:00:00.000z`;
+    const fim = `${data.dataFim}T23:59:59.000z`;
+    const filter = `(createdDate ge ${ini} and createdDate le ${fim}) or (lastUpdate ge ${ini} and lastUpdate le ${fim})`;
 
     try {
       while (true) {
@@ -176,6 +178,9 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
         atendente_id: atendenteId,
         criado_em: t.createdDate ?? null,
         resolvido_em: t.resolvedIn ?? null,
+        atualizado_em: t.lastUpdate ?? null,
+        reaberto_em: t.reopenedIn ?? null,
+        reaberto: !!t.reopenedIn,
         tma_minutos: tmaMin,
         csat_nota: csatNota,
         tme_minutos: frtMinutos,
