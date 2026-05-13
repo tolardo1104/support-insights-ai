@@ -420,6 +420,7 @@ export type Database = {
       }
       tickets_cache: {
         Row: {
+          abandonado: boolean | null
           assunto: string | null
           atendente_id: string | null
           categoria: string | null
@@ -427,6 +428,7 @@ export type Database = {
           cliente_nome: string | null
           criado_em: string | null
           csat_nota: number | null
+          frt_minutos: number | null
           id: string
           mensagens: Json | null
           movidesk_ticket_id: string | null
@@ -436,8 +438,10 @@ export type Database = {
           sincronizado_em: string
           status: string | null
           tma_minutos: number | null
+          tme_minutos: number | null
         }
         Insert: {
+          abandonado?: boolean | null
           assunto?: string | null
           atendente_id?: string | null
           categoria?: string | null
@@ -445,6 +449,7 @@ export type Database = {
           cliente_nome?: string | null
           criado_em?: string | null
           csat_nota?: number | null
+          frt_minutos?: number | null
           id?: string
           mensagens?: Json | null
           movidesk_ticket_id?: string | null
@@ -454,8 +459,10 @@ export type Database = {
           sincronizado_em?: string
           status?: string | null
           tma_minutos?: number | null
+          tme_minutos?: number | null
         }
         Update: {
+          abandonado?: boolean | null
           assunto?: string | null
           atendente_id?: string | null
           categoria?: string | null
@@ -463,6 +470,7 @@ export type Database = {
           cliente_nome?: string | null
           criado_em?: string | null
           csat_nota?: number | null
+          frt_minutos?: number | null
           id?: string
           mensagens?: Json | null
           movidesk_ticket_id?: string | null
@@ -472,6 +480,7 @@ export type Database = {
           sincronizado_em?: string
           status?: string | null
           tma_minutos?: number | null
+          tme_minutos?: number | null
         }
         Relationships: [
           {
