@@ -84,7 +84,7 @@ function AnaliseIaPage() {
         .order("criado_em", { ascending: false })
         .limit(10);
       if (data && data.length > 0) {
-        setResultadoGeral(data[0].resultado?.texto ?? null);
+        setResultadoGeral((data[0].resultado as any)?.texto ?? null);
         setHistoricoGeral(data);
       }
     })();
