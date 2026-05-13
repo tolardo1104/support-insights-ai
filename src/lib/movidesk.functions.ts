@@ -4,9 +4,9 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const MOVIDESK_BASE = "https://api.movidesk.com/public/v1";
 const SELECT_FIELDS =
-  "id,type,subject,category,urgency,status,baseStatus,origin,createdDate,resolvedIn,closedIn,lastUpdate,ownerTeam,tags,csat";
+  "id,type,subject,category,urgency,status,baseStatus,origin,createdDate,resolvedIn,closedIn,lastUpdate,ownerTeam,tags";
 const EXPAND_FIELDS =
-  "owner($select=id,businessName,email),clients($select=id,businessName,email),actions($select=id,type,createdDate,createdBy;$top=5;$orderby=createdDate asc)";
+  "owner($select=id,businessName,email),clients($select=id,businessName,email),actions($select=id,type,createdDate,createdBy;$top=5;$orderby=createdDate asc),satisfactionSurveyResponses";
 
 function tratarErroMovidesk(status: number, body: any): string {
   if (status === 400) return `Campo inválido na query Movidesk. ${body?.message ?? ""}`.trim();
