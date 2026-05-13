@@ -131,6 +131,49 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
       }
     }
 
+    // Buscar pesquisas de satisfação no período (A API de tickets depreciou os dados embutidos)
+    const surveyMap = new Map<string, number>();
+    try {
+      let skipSurveys = 0;
+      while (true) {
+        if (skipSurveys > 0) await new Promise((r) => setTimeout(r, 6000));
+        const sUrl = `${MOVIDESK_BASE}/survey/responses?token=${encodeURIComponent(apiKey)}&$filter=responseDate ge ${ini} and responseDate le ${fim}&$select=ticketId,type,value&$top=1000&$skip=${skipSurveys}`;
+        const sRes = await fetch(sUrl);
+        if (sRes.ok) {
+          const sPage = await sRes.json();
+          if (!Array.isArray(sPage) || sPage.length === 0) break;
+          for (const s of sPage) {
+            if (s.ticketId && typeof s.value === "number") {
+              let score = s.value;
+              // Normalizar para 0-100 baseado no tipo da pesquisa Movidesk
+              if (s.type === 2) {
+                // Faces (1 a 5)
+                // O cálculo padrão de CSAT da Movidesk usa a metodologia Top 2 Box:
+                // CSAT = (Soma das avaliações Ótimo e Bom) ÷ (Total de avaliações) × 100
+                // Portanto, para a média bater, atribuímos 100 para 4 (Bom) e 5 (Ótimo), e 0 para os demais.
+                score = (s.value >= 4) ? 100 : 0;
+              } else if (s.type === 3) {
+                // NPS (0 a 10)
+                score = s.value * 10;
+              } else if (s.type === 1 || s.type === 4) {
+                // Satisfeito/Insatisfeito ou Sim/Não (Geralmente 1=Positivo, 2=Negativo)
+                score = s.value === 1 ? 100 : 0;
+              }
+              // Limitar entre 0 e 100 por segurança
+              score = Math.max(0, Math.min(100, score));
+              surveyMap.set(String(s.ticketId), score);
+            }
+          }
+          skipSurveys += 1000;
+          if (sPage.length < 1000) break;
+        } else {
+          break; // Se falhar por algum motivo (ex: não tem acesso), ignoramos e seguimos sem o CSAT
+        }
+      }
+    } catch (e) {
+      console.error("Erro ao buscar surveys", e);
+    }
+
     let count = 0;
     for (const t of tickets) {
       const ownerMovideskId = t.owner?.id ? String(t.owner.id) : null;
@@ -152,19 +195,8 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
         }
       }
 
-      // Extrair NPS/CSAT da pesquisa de satisfação Movidesk
-      let csatNota: number | null = null;
-      if (Array.isArray(t.satisfactionSurveyResponses) && t.satisfactionSurveyResponses.length > 0) {
-        const r = t.satisfactionSurveyResponses[0];
-        const candidato =
-          r?.npsScore ??
-          r?.satisfactionWithService ??
-          r?.satisfactionWithSupport ??
-          r?.satisfactionWithExperience ??
-          r?.score ??
-          null;
-        if (typeof candidato === "number") csatNota = candidato;
-      }
+      // Extrair NPS/CSAT da pesquisa de satisfação recém buscada
+      const csatNota = surveyMap.get(String(t.id)) ?? null;
 
       const payload = {
         organizacao_id: orgId,
