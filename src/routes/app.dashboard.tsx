@@ -282,24 +282,51 @@ function Dashboard() {
       </Card>
 
       {/* LINHA 1 — volume */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-        <MetricCard label="Tickets abertos" value={loading ? "—" : metricas.abertos} icon={<TicketIcon className="h-4 w-4" />} />
-        <MetricCard label="Resolvidos" value={loading ? "—" : metricas.resolvidos} icon={<CheckCircle className="h-4 w-4" />} />
-        <MetricCard label="Total no período" value={loading ? "—" : metricas.total} icon={<TicketIcon className="h-4 w-4" />} />
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-3">
+        <MetricCard compact label="Tickets abertos" value={loading ? "—" : metricas.abertos}
+          icon={<TicketIcon className="h-4 w-4" />}
+          trend={trend(metricas.abertos, metricasPrev.abertos)}
+          meta={metas.abertos} lowerIsBetter />
+        <MetricCard compact label="Reabertos" value={loading ? "—" : metricas.reabertos}
+          icon={<RotateCcw className="h-4 w-4" />}
+          trend={trend(metricas.reabertos, metricasPrev.reabertos)}
+          meta={metas.reabertos} lowerIsBetter />
+        <MetricCard compact label="Resolvidos" value={loading ? "—" : metricas.resolvidos}
+          icon={<CheckCircle className="h-4 w-4" />}
+          trend={trend(metricas.resolvidos, metricasPrev.resolvidos)}
+          meta={metas.resolvidos} />
+        <MetricCard compact label="Total" value={loading ? "—" : metricas.total}
+          icon={<TicketIcon className="h-4 w-4" />}
+          trend={trend(metricas.total, metricasPrev.total)}
+          meta={metas.volume} />
+        <MetricCard compact label="TMA médio" value={loading ? "—" : metricas.tmaMedio} suffix="h"
+          icon={<Clock className="h-4 w-4" />}
+          trend={trend(metricas.tmaMedio, metricasPrev.tmaMedio)}
+          meta={metas.tma} lowerIsBetter />
       </div>
 
-      {/* LINHA 2 — qualidade */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-        <MetricCard label="TMA médio" value={loading ? "—" : metricas.tmaMedio} suffix="h" icon={<Clock className="h-4 w-4" />} hint="Tempo médio de atendimento" />
-        <MetricCard label="CSAT médio" value={loading ? "—" : metricas.csatMedio} suffix="%" icon={<Smile className="h-4 w-4" />} />
-        <MetricCard label="FCR" value={loading ? "—" : metricas.fcr} suffix="%" icon={<Target className="h-4 w-4" />} hint="Resolução no 1º contato" />
-      </div>
-
-      {/* LINHA 3 — tempo e abandono */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-        <MetricCard label="TME" value={loading ? "—" : metricas.tmeMedioH} icon={<Timer className="h-4 w-4" />} hint="Tempo médio de espera (1ª resposta)" />
-        <MetricCard label="FRT" value={loading ? "—" : metricas.frtMedioH} icon={<PhoneCall className="h-4 w-4" />} hint="First Response Time" />
-        <MetricCard label="Taxa de abandono" value={loading ? "—" : metricas.taxaAbandono} suffix="%" icon={<PhoneOff className="h-4 w-4" />} hint="Tickets cancelados/sem resposta" />
+      {/* LINHA 2 — qualidade e tempo */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+        <MetricCard compact label="CSAT médio" value={loading ? "—" : metricas.csatMedio} suffix="%"
+          icon={<Smile className="h-4 w-4" />}
+          trend={trend(metricas.csatMedio, metricasPrev.csatMedio)}
+          meta={metas.csat} />
+        <MetricCard compact label="FCR" value={loading ? "—" : metricas.fcr} suffix="%"
+          icon={<Target className="h-4 w-4" />}
+          trend={trend(metricas.fcr, metricasPrev.fcr)}
+          meta={metas.fcr} />
+        <MetricCard compact label="TME" value={loading ? "—" : fmtTempo(metricas.tmeMedio)}
+          icon={<Timer className="h-4 w-4" />}
+          trend={trend(metricas.tmeMedio, metricasPrev.tmeMedio)}
+          meta={metas.tme} lowerIsBetter />
+        <MetricCard compact label="FRT" value={loading ? "—" : fmtTempo(metricas.frtMedio)}
+          icon={<PhoneCall className="h-4 w-4" />}
+          trend={trend(metricas.frtMedio, metricasPrev.frtMedio)}
+          meta={metas.frt} lowerIsBetter />
+        <MetricCard compact label="Abandono" value={loading ? "—" : metricas.taxaAbandono} suffix="%"
+          icon={<PhoneOff className="h-4 w-4" />}
+          trend={trend(metricas.taxaAbandono, metricasPrev.taxaAbandono)}
+          meta={metas.abandono} lowerIsBetter />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
