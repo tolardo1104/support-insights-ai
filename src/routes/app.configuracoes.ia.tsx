@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Sparkles, Zap, Globe, Cpu } from "lucide-react";
+import { Sparkles, Zap, Globe, Cpu, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/app/configuracoes/ia")({ component: IAConfig });
 
@@ -25,7 +26,59 @@ const PROMPT_ATEND = `Você é um especialista em qualidade de atendimento. Anal
 function IAConfig() {
   const [provedor, setProvedor] = useState("gemini");
   const [modelo, setModelo] = useState("gemini-2.0-flash");
-  const sel = provedores.find((p) => p.id === provedor)!;
+  const [apiKey, setApiKey] = useState("");
+  const [analiseAuto, setAnaliseAuto] = useState("manual");
+  const [ticketsPorAnalise, setTicketsPorAnalise] = useState("20");
+  const [idioma, setIdioma] = useState("pt-BR");
+  const [promptGeral, setPromptGeral] = useState(PROMPT_GERAL);
+  const [promptAtendente, setPromptAtendente] = useState(PROMPT_ATEND);
+  const [saving, setSaving] = useState(false);
+
+  const sel = provedores.find((p) => p.id === provedor) || provedores[2];
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase
+        .from("configuracoes")
+        .select("ia_provedor, ia_modelo, ia_api_key, ia_analise_automatica, ia_tickets_analisados, ia_idioma, ia_prompt_analise_geral, ia_prompt_analise_atendente")
+        .maybeSingle();
+      if (error) { toast.error(error.message); return; }
+      if (data) {
+        if (data.ia_provedor) setProvedor(data.ia_provedor);
+        if (data.ia_modelo) setModelo(data.ia_modelo);
+        if (data.ia_api_key) setApiKey(data.ia_api_key);
+        if (data.ia_analise_automatica) setAnaliseAuto(data.ia_analise_automatica);
+        if (data.ia_tickets_analisados !== null) setTicketsPorAnalise(String(data.ia_tickets_analisados));
+        else if (data.ia_tickets_analisados === null) setTicketsPorAnalise("all");
+        if (data.ia_idioma) setIdioma(data.ia_idioma);
+        if (data.ia_prompt_analise_geral) setPromptGeral(data.ia_prompt_analise_geral);
+        if (data.ia_prompt_analise_atendente) setPromptAtendente(data.ia_prompt_analise_atendente);
+      }
+    })();
+  }, []);
+
+  const save = async () => {
+    setSaving(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setSaving(false); return toast.error("Sessão expirada"); }
+    const { data: prof, error: pErr } = await supabase
+      .from("profiles").select("organizacao_id").eq("id", user.id).single();
+    if (pErr || !prof?.organizacao_id) { setSaving(false); return toast.error(pErr?.message ?? "Organização não encontrada"); }
+    
+    const { error } = await supabase.from("configuracoes").update({
+      ia_provedor: provedor,
+      ia_modelo: modelo,
+      ia_api_key: apiKey,
+      ia_analise_automatica: analiseAuto,
+      ia_tickets_analisados: ticketsPorAnalise === "all" ? null : Number(ticketsPorAnalise),
+      ia_idioma: idioma,
+      ia_prompt_analise_geral: promptGeral,
+      ia_prompt_analise_atendente: promptAtendente,
+    }).eq("organizacao_id", prof.organizacao_id);
+    
+    setSaving(false);
+    error ? toast.error(error.message) : toast.success("Configurações de IA salvas com sucesso!");
+  };
 
   return (
     <div className="space-y-6">
@@ -57,7 +110,7 @@ function IAConfig() {
               <Label>API Key</Label>
               <a href={sel.help} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline">onde obter esta chave</a>
             </div>
-            <Input type="password" placeholder="••••••••••••••••" />
+            <Input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="••••••••••••••••" />
           </div>
           <div className="space-y-2">
             <Label>Modelo</Label>
@@ -76,7 +129,7 @@ function IAConfig() {
         <div className="grid md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label>Análise automática</Label>
-            <Select defaultValue="manual">
+            <Select value={analiseAuto} onValueChange={setAnaliseAuto}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="manual">Manual</SelectItem>
@@ -87,7 +140,7 @@ function IAConfig() {
           </div>
           <div className="space-y-2">
             <Label>Tickets por análise</Label>
-            <Select defaultValue="20">
+            <Select value={ticketsPorAnalise} onValueChange={setTicketsPorAnalise}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="10">10 tickets</SelectItem>
@@ -99,7 +152,7 @@ function IAConfig() {
           </div>
           <div className="space-y-2">
             <Label>Idioma</Label>
-            <Select defaultValue="pt-BR">
+            <Select value={idioma} onValueChange={setIdioma}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="pt-BR">Português (BR)</SelectItem>
@@ -115,13 +168,16 @@ function IAConfig() {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>Prompt — Análise geral do período</Label>
-            <Textarea defaultValue={PROMPT_GERAL} className="min-h-[140px] font-mono text-xs" />
+            <Textarea value={promptGeral} onChange={(e) => setPromptGeral(e.target.value)} className="min-h-[140px] font-mono text-xs" />
           </div>
           <div className="space-y-2">
             <Label>Prompt — Análise por atendente</Label>
-            <Textarea defaultValue={PROMPT_ATEND} className="min-h-[160px] font-mono text-xs" />
+            <Textarea value={promptAtendente} onChange={(e) => setPromptAtendente(e.target.value)} className="min-h-[160px] font-mono text-xs" />
           </div>
-          <Button onClick={() => toast.success("Configurações de IA salvas")}>Salvar configurações</Button>
+          <Button onClick={save} disabled={saving}>
+            {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            Salvar configurações
+          </Button>
         </div>
       </Card>
     </div>
