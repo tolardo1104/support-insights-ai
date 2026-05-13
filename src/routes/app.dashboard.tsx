@@ -11,14 +11,14 @@ import {
 } from "recharts";
 import {
   RefreshCw, Sparkles, TicketIcon, Clock, Smile, Target,
-  CheckCircle, Loader2, PhoneOff, Timer, PhoneCall
+  CheckCircle, Loader2, PhoneOff, Timer, PhoneCall, RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useMemo, useState, useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { syncMovideskTickets } from "@/lib/movidesk.functions";
 import { analyzePeriod } from "@/lib/ai-analysis.functions";
-import { useTickets } from "@/lib/use-tickets-data";
+import { useTickets, useTicketsPrevious, type Ticket } from "@/lib/use-tickets-data";
 import { supabase } from "@/integrations/supabase/client";
 import { startOfMonth, subMonths, endOfMonth, subDays } from "date-fns";
 
@@ -54,6 +54,8 @@ function Dashboard() {
   const syncFn = useServerFn(syncMovideskTickets);
   const analyzeFn = useServerFn(analyzePeriod);
   const { tickets, loading } = useTickets(from, to);
+  const { tickets: ticketsPrev } = useTicketsPrevious(from, to);
+  const [metas, setMetas] = useState<Record<string, number>>({});
 
   useEffect(() => {
     (async () => {
@@ -66,6 +68,17 @@ function Dashboard() {
         .maybeSingle();
       const texto = (data?.resultado as any)?.texto;
       if (texto) setLastAnalise(texto);
+
+      const { data: ms } = await supabase
+        .from("metas")
+        .select("metrica, valor_meta")
+        .eq("ativo", true)
+        .is("atendente_id", null);
+      if (ms) {
+        const map: Record<string, number> = {};
+        for (const m of ms) map[m.metrica] = Number(m.valor_meta);
+        setMetas(map);
+      }
     })();
   }, []);
 
