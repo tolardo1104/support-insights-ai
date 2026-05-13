@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { generateText } from "ai";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { createLovableAiGatewayProvider, mapModel } from "@/lib/ai-gateway";
+import { getProviderAndModel } from "@/lib/ai-gateway";
 
 async function getOrgConfig(supabase: any, userId: string) {
   const { data: profile } = await supabase
@@ -89,30 +89,34 @@ export const analyzePeriod = createServerFn({ method: "POST" })
       ).sort((a: any, b: any) => b[1] - a[1]).slice(0, 10),
     };
 
-    const provider = createLovableAiGatewayProvider(apiKey);
-    const model = provider(mapModel(cfg?.ia_provedor || "gemini", cfg?.ia_modelo));
+    const model = getProviderAndModel(cfg?.ia_provedor || "gemini", apiKey, cfg?.ia_modelo);
 
     // Se promptOverride, usar ele diretamente; caso contrário usar o prompt configurado
     const prompt = data.promptOverride
       ? `${data.promptOverride}\n\nDADOS DO PERÍODO (${dataInicio} → ${dataFim}):\n${JSON.stringify(totais, null, 2)}`
       : `${cfg?.ia_prompt_analise_geral || "Analise os dados de suporte e dê insights acionáveis."}\n\nDADOS DO PERÍODO (${dataInicio} → ${dataFim}):\n${JSON.stringify(totais, null, 2)}\n\nAmostra de assuntos:\n${tickets.slice(0, 30).map((t: any) => `- [${t.categoria || "—"}] ${t.assunto}`).join("\n")}`;
 
-    const { text } = await generateText({ model, prompt });
+    try {
+      const { text } = await generateText({ model, prompt });
 
-    // Salvar no banco sempre (sobrescreve para análise geral normal; cria novo para overrides)
-    if (!data.promptOverride) {
-      await supabase.from("analises_ia").insert({
-        organizacao_id: orgId,
-        tipo: "geral",
-        ia_provedor: cfg?.ia_provedor,
-        ia_modelo: cfg?.ia_modelo,
-        resultado: { texto: text, totais } as any,
-        periodo_inicio: dataInicio,
-        periodo_fim: dataFim,
-      });
+      // Salvar no banco sempre (sobrescreve para análise geral normal; cria novo para overrides)
+      if (!data.promptOverride) {
+        await supabase.from("analises_ia").insert({
+          organizacao_id: orgId,
+          tipo: "geral",
+          ia_provedor: cfg?.ia_provedor,
+          ia_modelo: cfg?.ia_modelo,
+          resultado: { texto: text, totais } as any,
+          periodo_inicio: dataInicio,
+          periodo_fim: dataFim,
+        });
+      }
+
+      return { ok: true, resultado: text };
+    } catch (error: any) {
+      console.error("Erro na geração de IA (analyzePeriod):", error);
+      return { ok: false, resultado: `Erro da IA: ${error.message || "Erro desconhecido"}` };
     }
-
-    return { ok: true, resultado: text };
   });
 
 /** Analyze a specific atendente. */
@@ -134,19 +138,23 @@ export const analyzeAtendente = createServerFn({ method: "POST" })
     const apiKey = getApiKey(cfg);
     if (!apiKey) return { ok: false, resultado: "Configure uma API Key de IA em Configurações." };
 
-    const provider = createLovableAiGatewayProvider(apiKey);
-    const model = provider(mapModel(cfg?.ia_provedor || "gemini", cfg?.ia_modelo));
+    const model = getProviderAndModel(cfg?.ia_provedor || "gemini", apiKey, cfg?.ia_modelo);
 
     const prompt = (cfg?.ia_prompt_analise_atendente || "").replace("{NOME}", atend.nome) +
       "\n\nTICKETS:\n" + tickets.map((t: any) => `- [${t.categoria || "—"}] ${t.assunto} | TMA ${t.tma_minutos}min | CSAT ${t.csat_nota ?? "—"}`).join("\n");
 
-    const { text } = await generateText({ model, prompt });
+    try {
+      const { text } = await generateText({ model, prompt });
 
-    await supabase.from("analises_ia").insert({
-      organizacao_id: orgId, atendente_id: data.atendenteId, tipo: "atendente",
-      ia_provedor: cfg?.ia_provedor, ia_modelo: cfg?.ia_modelo,
-      resultado: { texto: text },
-    });
+      await supabase.from("analises_ia").insert({
+        organizacao_id: orgId, atendente_id: data.atendenteId, tipo: "atendente",
+        ia_provedor: cfg?.ia_provedor, ia_modelo: cfg?.ia_modelo,
+        resultado: { texto: text },
+      });
 
-    return { ok: true, resultado: text };
+      return { ok: true, resultado: text };
+    } catch (error: any) {
+      console.error("Erro na geração de IA (analyzeAtendente):", error);
+      return { ok: false, resultado: `Erro da IA: ${error.message || "Erro desconhecido"}` };
+    }
   });

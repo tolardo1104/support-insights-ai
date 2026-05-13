@@ -14,9 +14,9 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/app/configuracoes/ia")({ component: IAConfig });
 
 const provedores = [
-  { id: "claude", nome: "Anthropic Claude", icon: Sparkles, tag: "Melhor análise", modelos: ["claude-sonnet-4", "claude-opus-4"], help: "https://console.anthropic.com" },
+  { id: "claude", nome: "Anthropic Claude", icon: Sparkles, tag: "Melhor análise", modelos: ["claude-3-5-sonnet-latest", "claude-3-opus-latest"], help: "https://console.anthropic.com" },
   { id: "openai", nome: "OpenAI", icon: Cpu, tag: "Popular", modelos: ["gpt-4o", "gpt-4o-mini"], help: "https://platform.openai.com/api-keys" },
-  { id: "gemini", nome: "Google Gemini", icon: Globe, tag: "Tem tier gratuito", modelos: ["gemini-2.0-flash", "gemini-1.5-pro"], help: "https://aistudio.google.com/apikey" },
+  { id: "gemini", nome: "Google Gemini", icon: Globe, tag: "Tem tier gratuito", modelos: ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-flash"], help: "https://aistudio.google.com/apikey" },
   { id: "groq", nome: "Meta LLaMA via Groq", icon: Zap, tag: "Gratuito", modelos: ["llama-3.3-70b-versatile"], help: "https://console.groq.com/keys" },
 ];
 
@@ -64,7 +64,7 @@ function IAConfig() {
     const { data: prof, error: pErr } = await supabase
       .from("profiles").select("organizacao_id").eq("id", user.id).single();
     if (pErr || !prof?.organizacao_id) { setSaving(false); return toast.error(pErr?.message ?? "Organização não encontrada"); }
-    
+
     const { error } = await supabase.from("configuracoes").update({
       ia_provedor: provedor,
       ia_modelo: modelo,
@@ -75,7 +75,7 @@ function IAConfig() {
       ia_prompt_analise_geral: promptGeral,
       ia_prompt_analise_atendente: promptAtendente,
     }).eq("organizacao_id", prof.organizacao_id);
-    
+
     setSaving(false);
     error ? toast.error(error.message) : toast.success("Configurações de IA salvas com sucesso!");
   };
