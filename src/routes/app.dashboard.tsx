@@ -315,11 +315,15 @@ function Dashboard() {
       </div>
 
       {/* LINHA 2 — qualidade e tempo */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         <MetricCard compact label="CSAT médio" value={loading ? "—" : metricas.csatMedio} suffix="%"
           icon={<Smile className="h-4 w-4" />}
           trend={trend(metricas.csatMedio, metricasPrev.csatMedio)}
           meta={metas.csat} />
+        <MetricCard compact label="NPS" value={loading ? "—" : metricas.npsScore}
+          icon={<Smile className="h-4 w-4" />}
+          trend={trend(metricas.npsScore, metricasPrev.npsScore)}
+          meta={metas.nps} />
         <MetricCard compact label="FCR" value={loading ? "—" : metricas.fcr} suffix="%"
           icon={<Target className="h-4 w-4" />}
           trend={trend(metricas.fcr, metricasPrev.fcr)}
