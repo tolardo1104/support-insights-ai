@@ -141,23 +141,23 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
         const sUrl = `${MOVIDESK_BASE}/survey/responses?token=${encodeURIComponent(apiKey)}&$filter=responseDate ge ${ini} and responseDate le ${fim}&$select=ticketId,type,value&$top=1000&$skip=${skipSurveys}`;
         const sRes = await fetch(sUrl);
         if (!sRes.ok) break;
-        const sPage = await sRes.json();
-        if (!Array.isArray(sPage) || sPage.length === 0) break;
-        for (const s of sPage) {
+        const sBody = await sRes.json();
+        // A API retorna { hasMore, items: [...] } — não um array direto
+        const sItems: any[] = Array.isArray(sBody) ? sBody : (sBody?.items ?? []);
+        if (sItems.length === 0) break;
+        for (const s of sItems) {
           if (!s.ticketId || typeof s.value !== "number") continue;
           const tId = String(s.ticketId);
           if (s.type === 3) {
-            // NPS (0-10)
             npsMap.set(tId, Math.max(0, Math.min(10, s.value)));
           } else if (s.type === 2) {
-            // CSAT Faces (1-5) — Top 2 Box
             csatMap.set(tId, s.value >= 4 ? 100 : 0);
           } else if (s.type === 1 || s.type === 4) {
             csatMap.set(tId, s.value === 1 ? 100 : 0);
           }
         }
         skipSurveys += 1000;
-        if (sPage.length < 1000) break;
+        if (!sBody?.hasMore && sItems.length < 1000) break;
       }
     } catch (e) {
       console.error("Erro ao buscar surveys", e);
