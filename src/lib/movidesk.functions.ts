@@ -217,9 +217,10 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
         reaberto: !!t.reopenedIn,
         tma_minutos: tmaMin,
         csat_nota: csatNota,
-        tme_minutos: frtMinutos,
+        nps_nota: npsNota,
+        tme_minutos: tmeMinutos,
         frt_minutos: frtMinutos,
-        abandonado: t.baseStatus === "Cancelado" || t.baseStatus === "Abandonado" || false,
+        abandonado,
         sincronizado_em: new Date().toISOString(),
       };
 
