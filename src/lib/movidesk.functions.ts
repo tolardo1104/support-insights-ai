@@ -131,44 +131,33 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
       }
     }
 
-    // Buscar pesquisas de satisfação no período (A API de tickets depreciou os dados embutidos)
-    const surveyMap = new Map<string, number>();
+    // Buscar pesquisas de satisfação no período — separa CSAT de NPS
+    const csatMap = new Map<string, number>(); // 0-100
+    const npsMap = new Map<string, number>();  // 0-10 cru
     try {
       let skipSurveys = 0;
       while (true) {
         if (skipSurveys > 0) await new Promise((r) => setTimeout(r, 6000));
         const sUrl = `${MOVIDESK_BASE}/survey/responses?token=${encodeURIComponent(apiKey)}&$filter=responseDate ge ${ini} and responseDate le ${fim}&$select=ticketId,type,value&$top=1000&$skip=${skipSurveys}`;
         const sRes = await fetch(sUrl);
-        if (sRes.ok) {
-          const sPage = await sRes.json();
-          if (!Array.isArray(sPage) || sPage.length === 0) break;
-          for (const s of sPage) {
-            if (s.ticketId && typeof s.value === "number") {
-              let score = s.value;
-              // Normalizar para 0-100 baseado no tipo da pesquisa Movidesk
-              if (s.type === 2) {
-                // Faces (1 a 5)
-                // O cálculo padrão de CSAT da Movidesk usa a metodologia Top 2 Box:
-                // CSAT = (Soma das avaliações Ótimo e Bom) ÷ (Total de avaliações) × 100
-                // Portanto, para a média bater, atribuímos 100 para 4 (Bom) e 5 (Ótimo), e 0 para os demais.
-                score = (s.value >= 4) ? 100 : 0;
-              } else if (s.type === 3) {
-                // NPS (0 a 10)
-                score = s.value * 10;
-              } else if (s.type === 1 || s.type === 4) {
-                // Satisfeito/Insatisfeito ou Sim/Não (Geralmente 1=Positivo, 2=Negativo)
-                score = s.value === 1 ? 100 : 0;
-              }
-              // Limitar entre 0 e 100 por segurança
-              score = Math.max(0, Math.min(100, score));
-              surveyMap.set(String(s.ticketId), score);
-            }
+        if (!sRes.ok) break;
+        const sPage = await sRes.json();
+        if (!Array.isArray(sPage) || sPage.length === 0) break;
+        for (const s of sPage) {
+          if (!s.ticketId || typeof s.value !== "number") continue;
+          const tId = String(s.ticketId);
+          if (s.type === 3) {
+            // NPS (0-10)
+            npsMap.set(tId, Math.max(0, Math.min(10, s.value)));
+          } else if (s.type === 2) {
+            // CSAT Faces (1-5) — Top 2 Box
+            csatMap.set(tId, s.value >= 4 ? 100 : 0);
+          } else if (s.type === 1 || s.type === 4) {
+            csatMap.set(tId, s.value === 1 ? 100 : 0);
           }
-          skipSurveys += 1000;
-          if (sPage.length < 1000) break;
-        } else {
-          break; // Se falhar por algum motivo (ex: não tem acesso), ignoramos e seguimos sem o CSAT
         }
+        skipSurveys += 1000;
+        if (sPage.length < 1000) break;
       }
     } catch (e) {
       console.error("Erro ao buscar surveys", e);
@@ -182,21 +171,34 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
       const tmaHoras = calcularTmaHoras(t.createdDate, t.resolvedIn);
       const tmaMin = tmaHoras !== null ? Math.round(tmaHoras * 60) : null;
 
-      // Calcular FRT: tempo até primeira ação do atendente
+      // FRT: createdDate -> primeira resposta do atendente (action.type=2)
+      // TME: createdDate -> primeira ação de qualquer tipo (proxy de "ticket assumido")
+      // Abandono: ticket fechado/resolvido SEM nenhuma resposta do atendente
       let frtMinutos: number | null = null;
+      let tmeMinutos: number | null = null;
+      let temRespostaAtendente = false;
       if (Array.isArray(t.actions) && t.createdDate) {
-        const primeiraResposta = t.actions.find(
-          (a: any) => a.type === 2 // type 2 = resposta do atendente na Movidesk
-        );
+        const created = new Date(t.createdDate).getTime();
+        const primeiraAcao = t.actions[0];
+        if (primeiraAcao?.createdDate) {
+          const diff = new Date(primeiraAcao.createdDate).getTime() - created;
+          tmeMinutos = diff > 0 ? Math.round(diff / 60000) : null;
+        }
+        const primeiraResposta = t.actions.find((a: any) => a.type === 2);
         if (primeiraResposta?.createdDate) {
-          const diff = new Date(primeiraResposta.createdDate).getTime()
-            - new Date(t.createdDate).getTime();
+          temRespostaAtendente = true;
+          const diff = new Date(primeiraResposta.createdDate).getTime() - created;
           frtMinutos = diff > 0 ? Math.round(diff / 60000) : null;
         }
       }
+      const statusFinal = (t.baseStatus ?? t.status ?? "").toString().toLowerCase();
+      const fechado = statusFinal.includes("fechado") || statusFinal.includes("resolvido")
+        || statusFinal.includes("closed") || statusFinal.includes("resolved")
+        || statusFinal.includes("cancelado");
+      const abandonado = fechado && !temRespostaAtendente;
 
-      // Extrair NPS/CSAT da pesquisa de satisfação recém buscada
-      const csatNota = surveyMap.get(String(t.id)) ?? null;
+      const csatNota = csatMap.get(String(t.id)) ?? null;
+      const npsNota = npsMap.get(String(t.id)) ?? null;
 
       const payload = {
         organizacao_id: orgId,
