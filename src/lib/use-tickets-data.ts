@@ -18,13 +18,14 @@ export type Ticket = {
   reaberto: boolean | null;
   tma_minutos: number | null;
   csat_nota: number | null;
+  nps_nota: number | null;
   tme_minutos: number | null;
   frt_minutos: number | null;
   abandonado: boolean | null;
 };
 
 const SELECT =
-  "id,movidesk_ticket_id,assunto,status,prioridade,categoria,cliente_id,cliente_nome,atendente_id,criado_em,resolvido_em,atualizado_em,reaberto_em,reaberto,tma_minutos,csat_nota,tme_minutos,frt_minutos,abandonado";
+  "id,movidesk_ticket_id,assunto,status,prioridade,categoria,cliente_id,cliente_nome,atendente_id,criado_em,resolvido_em,atualizado_em,reaberto_em,reaberto,tma_minutos,csat_nota,nps_nota,tme_minutos,frt_minutos,abandonado";
 
 async function fetchRange(dataInicio: string, dataFim: string): Promise<Ticket[]> {
   const { data, error } = await supabase

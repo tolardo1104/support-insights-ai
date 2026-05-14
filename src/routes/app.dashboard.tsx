@@ -115,6 +115,15 @@ function Dashboard() {
     const csatMedio = csats.length
       ? Math.round(csats.reduce((a, b) => a + b, 0) / csats.length) : 0;
 
+    // NPS: promotores (9-10) - detratores (0-6), em escala -100 a 100
+    const npsRaw = list.map((t) => t.nps_nota).filter((v): v is number => v != null);
+    let npsScore = 0;
+    if (npsRaw.length) {
+      const promotores = npsRaw.filter((v) => v >= 9).length;
+      const detratores = npsRaw.filter((v) => v <= 6).length;
+      npsScore = Math.round(((promotores - detratores) / npsRaw.length) * 100);
+    }
+
     const fcr = list.length
       ? Math.round((resolvidos / Math.max(list.length, 1)) * 100) : 0;
 
@@ -129,7 +138,7 @@ function Dashboard() {
 
     return {
       abertos, resolvidos, reabertos, total: list.length,
-      tmaMedio, csatMedio, fcr,
+      tmaMedio, csatMedio, npsScore, fcr,
       tmeMedio, frtMedio, taxaAbandono,
     };
   }
@@ -306,11 +315,15 @@ function Dashboard() {
       </div>
 
       {/* LINHA 2 — qualidade e tempo */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         <MetricCard compact label="CSAT médio" value={loading ? "—" : metricas.csatMedio} suffix="%"
           icon={<Smile className="h-4 w-4" />}
           trend={trend(metricas.csatMedio, metricasPrev.csatMedio)}
           meta={metas.csat} />
+        <MetricCard compact label="NPS" value={loading ? "—" : metricas.npsScore}
+          icon={<Smile className="h-4 w-4" />}
+          trend={trend(metricas.npsScore, metricasPrev.npsScore)}
+          meta={metas.nps} />
         <MetricCard compact label="FCR" value={loading ? "—" : metricas.fcr} suffix="%"
           icon={<Target className="h-4 w-4" />}
           trend={trend(metricas.fcr, metricasPrev.fcr)}
