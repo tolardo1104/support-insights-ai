@@ -1,0 +1,1 @@
+ALTER TABLE public.tickets_cache ADD COLUMN IF NOT EXISTS nps_nota integer;

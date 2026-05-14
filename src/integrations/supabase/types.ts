@@ -433,6 +433,7 @@ export type Database = {
           id: string
           mensagens: Json | null
           movidesk_ticket_id: string | null
+          nps_nota: number | null
           organizacao_id: string
           prioridade: string | null
           reaberto: boolean | null
@@ -457,6 +458,7 @@ export type Database = {
           id?: string
           mensagens?: Json | null
           movidesk_ticket_id?: string | null
+          nps_nota?: number | null
           organizacao_id: string
           prioridade?: string | null
           reaberto?: boolean | null
@@ -481,6 +483,7 @@ export type Database = {
           id?: string
           mensagens?: Json | null
           movidesk_ticket_id?: string | null
+          nps_nota?: number | null
           organizacao_id?: string
           prioridade?: string | null
           reaberto?: boolean | null
