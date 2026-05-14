@@ -138,7 +138,7 @@ function Dashboard() {
 
     return {
       abertos, resolvidos, reabertos, total: list.length,
-      tmaMedio, csatMedio, fcr,
+      tmaMedio, csatMedio, npsScore, fcr,
       tmeMedio, frtMedio, taxaAbandono,
     };
   }
