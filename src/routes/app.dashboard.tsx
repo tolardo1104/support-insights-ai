@@ -115,6 +115,15 @@ function Dashboard() {
     const csatMedio = csats.length
       ? Math.round(csats.reduce((a, b) => a + b, 0) / csats.length) : 0;
 
+    // NPS: promotores (9-10) - detratores (0-6), em escala -100 a 100
+    const npsRaw = list.map((t) => t.nps_nota).filter((v): v is number => v != null);
+    let npsScore = 0;
+    if (npsRaw.length) {
+      const promotores = npsRaw.filter((v) => v >= 9).length;
+      const detratores = npsRaw.filter((v) => v <= 6).length;
+      npsScore = Math.round(((promotores - detratores) / npsRaw.length) * 100);
+    }
+
     const fcr = list.length
       ? Math.round((resolvidos / Math.max(list.length, 1)) * 100) : 0;
 
