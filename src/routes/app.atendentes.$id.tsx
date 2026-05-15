@@ -16,6 +16,7 @@ export const Route = createFileRoute("/app/atendentes/$id")({ component: Atenden
 type Atendente = { id: string; nome: string; equipe: string | null; email: string | null; criado_em: string | null };
 type Ticket = {
   id: string; movidesk_ticket_id: string | null; assunto: string | null; categoria: string | null;
+  status: string | null; criado_em: string | null; resolvido_em: string | null;
   tma_minutos: number | null; csat_nota: number | null; nps_nota: number | null;
   frt_minutos: number | null; tme_minutos: number | null; abandonado: boolean;
 };
@@ -36,7 +37,9 @@ function AtendenteDetail() {
   async function load() {
     setLoading(true);
     const [{ data: a }, { data: t }, { data: i }] = await Promise.all([
+      supabase.from("atendentes").select("*").eq("id", id).maybeSingle(),
       supabase.from("tickets_cache").select("id,movidesk_ticket_id,assunto,categoria,status,criado_em,resolvido_em,tma_minutos,csat_nota,nps_nota,frt_minutos,tme_minutos,abandonado").eq("atendente_id", id).order("criado_em", { ascending: false }).limit(50),
+      supabase.from("analises_ia").select("*").eq("atendente_id", id).order("criado_em", { ascending: false }).limit(1).maybeSingle(),
     ]);
     if (!a) {
       toast.error("Atendente não encontrado");
