@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 
 export function MetricCard({
-  label, value, suffix, hint, trend, icon, meta, lowerIsBetter, compact,
+  label, value, suffix, hint, trend, icon, meta, lowerIsBetter, compact, className, title
 }: {
   label: string;
   value: string | number;
@@ -15,6 +15,8 @@ export function MetricCard({
   meta?: number | null;
   lowerIsBetter?: boolean;
   compact?: boolean;
+  className?: string;
+  title?: string;
 }) {
   const hasTrend = typeof trend === "number" && isFinite(trend);
   const isUp = hasTrend && (trend as number) > 0;
@@ -23,7 +25,7 @@ export function MetricCard({
   const isGood = lowerIsBetter ? isDown : isUp;
 
   return (
-    <Card className={cn(compact ? "p-3" : "p-5")}>
+    <Card className={cn(compact ? "p-3" : "p-5", className)} title={title}>
       <div className="flex items-start justify-between gap-2">
         <span className={cn(
           "font-medium text-muted-foreground uppercase tracking-wide",

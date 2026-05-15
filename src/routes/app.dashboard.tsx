@@ -107,17 +107,17 @@ function Dashboard() {
     const resolvidos = list.filter((t) => !!t.resolvido_em).length;
     const reabertos = list.filter((t) => t.reaberto).length;
 
-    const tmas = list.map((t) => t.tma_minutos).filter((v): v is number => v != null);
+    const tmas = list.map((t) => t.tma_minutos).filter((v): v is number => v !== null);
     const tmaMedio = tmas.length
-      ? Math.round((tmas.reduce((a, b) => a + b, 0) / tmas.length / 60) * 10) / 10 : 0;
+      ? Math.round((tmas.reduce((a, b) => a + b, 0) / tmas.length / 60) * 10) / 10 : null;
 
-    const csats = list.map((t) => t.csat_nota).filter((v): v is number => v != null);
+    const csats = list.map((t) => t.csat_nota).filter((v): v is number => v !== null);
     const csatMedio = csats.length
-      ? Math.round(csats.reduce((a, b) => a + b, 0) / csats.length) : 0;
+      ? Math.round((csats.reduce((a, b) => a + b, 0) / csats.length) * 10) / 10 : null;
 
     // NPS: promotores (9-10) - detratores (0-6), em escala -100 a 100
-    const npsRaw = list.map((t) => t.nps_nota).filter((v): v is number => v != null);
-    let npsScore = 0;
+    const npsRaw = list.map((t) => t.nps_nota).filter((v): v is number => v !== null);
+    let npsScore: number | null = null;
     if (npsRaw.length) {
       const promotores = npsRaw.filter((v) => v >= 9).length;
       const detratores = npsRaw.filter((v) => v <= 6).length;
@@ -127,14 +127,21 @@ function Dashboard() {
     const fcr = list.length
       ? Math.round((resolvidos / Math.max(list.length, 1)) * 100) : 0;
 
-    const tmes = list.map((t) => t.tme_minutos).filter((v): v is number => v != null);
-    const tmeMedio = tmes.length ? Math.round(tmes.reduce((a, b) => a + b, 0) / tmes.length) : 0;
+    const tmes = list.map((t) => t.tme_minutos).filter((v): v is number => v !== null);
+    const tmeMedio = tmes.length ? Math.round(tmes.reduce((a, b) => a + b, 0) / tmes.length) : null;
 
-    const frts = list.map((t) => t.frt_minutos).filter((v): v is number => v != null);
-    const frtMedio = frts.length ? Math.round(frts.reduce((a, b) => a + b, 0) / frts.length) : 0;
+    const frts = list.map((t) => t.frt_minutos).filter((v): v is number => v !== null);
+    const frtMedio = frts.length ? Math.round(frts.reduce((a, b) => a + b, 0) / frts.length) : null;
 
     const abandonados = list.filter((t) => t.abandonado).length;
-    const taxaAbandono = list.length ? Math.round((abandonados / list.length) * 100) : 0;
+    // Consideramos apenas se temRespostaAtendente como proxy para abandono. Se os tickets não têm esse campo atualizado, podem vir nulos para abondonado.
+    // Como abandonado é booleano (true/false), podemos apenas contar.
+    // Mas para ser seguro, se todos tickets tiverem frt_minutos nulo e tme_minutos nulo,
+    // significa que é do banco antigo e não podemos calcular a taxa de abandono direito.
+    // Vamos verificar se existe pelo menos um ticket não nulo pra essas métricas de tempo
+    const taxaAbandono = frts.length > 0 || tmes.length > 0
+      ? (list.length ? Math.round((abandonados / list.length) * 100) : 0)
+      : null;
 
     return {
       abertos, resolvidos, reabertos, total: list.length,
@@ -182,13 +189,25 @@ function Dashboard() {
       if (!t.criado_em || t.csat_nota == null) continue;
       const dia = t.criado_em.slice(0, 10);
       const b = buckets.get(dia) ?? { sum: 0, n: 0 };
-      b.sum += t.csat_nota; b.n += 1;
+      b.sum += Number(t.csat_nota); b.n += 1;
       buckets.set(dia, b);
     }
-    return Array.from(buckets.entries())
-      .sort()
-      .map(([dia, b]) => ({ dia: dia.slice(5), csat: Math.round(b.sum / b.n) }));
-  }, [tickets]);
+    
+    const result = [];
+    let curr = new Date(from + "T00:00:00");
+    const end = new Date(to + "T00:00:00");
+    // Se o período for maior que 60 dias, agrupar de outra forma? Não, deixamos assim por enquanto
+    while (curr <= end) {
+      const dStr = curr.toISOString().slice(0, 10);
+      const b = buckets.get(dStr);
+      result.push({
+        dia: dStr.slice(5, 10).split('-').reverse().join('/'), // DD/MM
+        csat: b && b.n > 0 ? Math.round(b.sum / b.n) : null
+      });
+      curr.setDate(curr.getDate() + 1);
+    }
+    return result;
+  }, [tickets, from, to]);
 
   const sync = async () => {
     setSyncing(true);
@@ -295,51 +314,59 @@ function Dashboard() {
         <MetricCard compact label="Tickets abertos" value={loading ? "—" : metricas.abertos}
           icon={<TicketIcon className="h-4 w-4" />}
           trend={trend(metricas.abertos, metricasPrev.abertos)}
-          meta={metas.abertos} lowerIsBetter />
+          meta={metas.abertos} lowerIsBetter className="h-full" />
         <MetricCard compact label="Reabertos" value={loading ? "—" : metricas.reabertos}
           icon={<RotateCcw className="h-4 w-4" />}
           trend={trend(metricas.reabertos, metricasPrev.reabertos)}
-          meta={metas.reabertos} lowerIsBetter />
+          meta={metas.reabertos} lowerIsBetter className="h-full" />
         <MetricCard compact label="Resolvidos" value={loading ? "—" : metricas.resolvidos}
           icon={<CheckCircle className="h-4 w-4" />}
           trend={trend(metricas.resolvidos, metricasPrev.resolvidos)}
-          meta={metas.resolvidos} />
+          meta={metas.resolvidos} className="h-full" />
         <MetricCard compact label="Total" value={loading ? "—" : metricas.total}
           icon={<TicketIcon className="h-4 w-4" />}
           trend={trend(metricas.total, metricasPrev.total)}
-          meta={metas.volume} />
+          meta={metas.volume} className="h-full" />
         <MetricCard compact label="TMA médio" value={loading ? "—" : metricas.tmaMedio} suffix="h"
           icon={<Clock className="h-4 w-4" />}
           trend={trend(metricas.tmaMedio, metricasPrev.tmaMedio)}
-          meta={metas.tma} lowerIsBetter />
+          meta={metas.tma} lowerIsBetter className="h-full" />
       </div>
 
       {/* LINHA 2 — qualidade e tempo */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-        <MetricCard compact label="CSAT médio" value={loading ? "—" : metricas.csatMedio} suffix="%"
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+        <MetricCard compact label="CSAT médio" value={loading ? "—" : (metricas.csatMedio ?? "—")}
           icon={<Smile className="h-4 w-4" />}
-          trend={trend(metricas.csatMedio, metricasPrev.csatMedio)}
-          meta={metas.csat} />
-        <MetricCard compact label="NPS" value={loading ? "—" : metricas.npsScore}
-          icon={<Smile className="h-4 w-4" />}
-          trend={trend(metricas.npsScore, metricasPrev.npsScore)}
-          meta={metas.nps} />
+          trend={metricas.csatMedio !== null && metricasPrev.csatMedio !== null ? trend(metricas.csatMedio, metricasPrev.csatMedio) : null}
+          meta={metas.csat}
+          title={metricas.csatMedio === null ? "Sincronize novamente para calcular esta métrica" : undefined}
+          className="h-full"
+        />
         <MetricCard compact label="FCR" value={loading ? "—" : metricas.fcr} suffix="%"
           icon={<Target className="h-4 w-4" />}
           trend={trend(metricas.fcr, metricasPrev.fcr)}
-          meta={metas.fcr} />
-        <MetricCard compact label="TME" value={loading ? "—" : fmtTempo(metricas.tmeMedio)}
+          meta={metas.fcr} className="h-full" />
+        <MetricCard compact label="TME" value={loading ? "—" : (metricas.tmeMedio === null ? "—" : fmtTempo(metricas.tmeMedio))}
           icon={<Timer className="h-4 w-4" />}
-          trend={trend(metricas.tmeMedio, metricasPrev.tmeMedio)}
-          meta={metas.tme} lowerIsBetter />
-        <MetricCard compact label="FRT" value={loading ? "—" : fmtTempo(metricas.frtMedio)}
+          trend={metricas.tmeMedio !== null && metricasPrev.tmeMedio !== null ? trend(metricas.tmeMedio, metricasPrev.tmeMedio) : null}
+          meta={metas.tme} lowerIsBetter
+          title={metricas.tmeMedio === null ? "Sincronize novamente para calcular esta métrica" : undefined}
+          className="h-full"
+        />
+        <MetricCard compact label="FRT" value={loading ? "—" : (metricas.frtMedio === null ? "—" : fmtTempo(metricas.frtMedio))}
           icon={<PhoneCall className="h-4 w-4" />}
-          trend={trend(metricas.frtMedio, metricasPrev.frtMedio)}
-          meta={metas.frt} lowerIsBetter />
-        <MetricCard compact label="Abandono" value={loading ? "—" : metricas.taxaAbandono} suffix="%"
+          trend={metricas.frtMedio !== null && metricasPrev.frtMedio !== null ? trend(metricas.frtMedio, metricasPrev.frtMedio) : null}
+          meta={metas.frt} lowerIsBetter
+          title={metricas.frtMedio === null ? "Sincronize novamente para calcular esta métrica" : undefined}
+          className="h-full"
+        />
+        <MetricCard compact label="Abandono" value={loading ? "—" : (metricas.taxaAbandono ?? "—")} suffix={metricas.taxaAbandono !== null ? "%" : ""}
           icon={<PhoneOff className="h-4 w-4" />}
-          trend={trend(metricas.taxaAbandono, metricasPrev.taxaAbandono)}
-          meta={metas.abandono} lowerIsBetter />
+          trend={metricas.taxaAbandono !== null && metricasPrev.taxaAbandono !== null ? trend(metricas.taxaAbandono, metricasPrev.taxaAbandono) : null}
+          meta={metas.abandono} lowerIsBetter
+          title={metricas.taxaAbandono === null ? "Sincronize novamente para calcular esta métrica" : undefined}
+          className="h-full"
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
@@ -393,7 +420,7 @@ function Dashboard() {
       </div>
 
       <Card className="p-5 mb-6">
-        <h3 className="text-sm font-semibold mb-1">Evolução do CSAT / NPS</h3>
+        <h3 className="text-sm font-semibold mb-1">Evolução do CSAT</h3>
         <p className="text-xs text-muted-foreground mb-4">
           Satisfação média diária — nota vinda do campo csat_nota sincronizado da Movidesk
         </p>
@@ -412,7 +439,7 @@ function Dashboard() {
               <XAxis dataKey="dia" tick={{ fontSize: 11 }} stroke="var(--muted-foreground)" />
               <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="var(--muted-foreground)" />
               <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
-              <Line type="monotone" dataKey="csat" stroke="var(--primary)" strokeWidth={2} dot={{ r: 3 }}>
+              <Line type="monotone" dataKey="csat" stroke="var(--primary)" strokeWidth={2} dot={{ r: 3 }} connectNulls={true}>
                 <LabelList dataKey="csat" position="top" style={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
               </Line>
             </LineChart>

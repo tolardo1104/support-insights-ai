@@ -11,7 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useEffect, useMemo, useState } from "react";
 import { useTickets, useAtendentes } from "@/lib/use-tickets-data";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutGrid, List, X, ArrowRight, ArrowUpDown, Star, AlertTriangle } from "lucide-react";
+import { LayoutGrid, List, X, ArrowRight, ArrowUpDown, Star, AlertTriangle, ExternalLink } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/app/atendentes")({ component: AtendentesPage });
 
@@ -69,10 +70,12 @@ function AtendentesPage() {
       for (const r of (data ?? []) as any[]) {
         if (!r.atendente_id || map[r.atendente_id]) continue;
         const c = String(r.resultado?.classificacao ?? "").toLowerCase();
-        map[r.atendente_id] = c.includes("destaque") ? "destaque"
-          : c.includes("aten") ? "atencao"
-          : c.includes("regular") ? "regular"
-          : "sem_analise";
+        let status: StatusKey = "sem_analise";
+        if (c.includes("destaque")) status = "destaque";
+        else if (c.includes("aten")) status = "atencao";
+        else if (c.includes("regular")) status = "regular";
+        else if (r.resultado?.texto) status = "regular";
+        map[r.atendente_id] = status;
       }
       setClassMap(map);
     })();
@@ -85,22 +88,29 @@ function AtendentesPage() {
   }, [atendentes]);
 
   const rows = useMemo(() => {
-    const byId = new Map<string, { tickets: number; tmaSum: number; tmaN: number; csatSum: number; csatN: number }>();
+    const byId = new Map<string, { tickets: number; tmaSum: number; tmaN: number; csatSum: number; csatN: number; tmeSum: number; tmeN: number; frtSum: number; frtN: number; abandonos: number }>();
     for (const t of tickets) {
       if (!t.atendente_id) continue;
-      const cur = byId.get(t.atendente_id) ?? { tickets: 0, tmaSum: 0, tmaN: 0, csatSum: 0, csatN: 0 };
+      const cur = byId.get(t.atendente_id) ?? { tickets: 0, tmaSum: 0, tmaN: 0, csatSum: 0, csatN: 0, tmeSum: 0, tmeN: 0, frtSum: 0, frtN: 0, abandonos: 0 };
       cur.tickets += 1;
       if (t.tma_minutos != null) { cur.tmaSum += t.tma_minutos; cur.tmaN += 1; }
       if (t.csat_nota != null) { cur.csatSum += t.csat_nota; cur.csatN += 1; }
+      if (t.tme_minutos != null) { cur.tmeSum += t.tme_minutos; cur.tmeN += 1; }
+      if (t.frt_minutos != null) { cur.frtSum += t.frt_minutos; cur.frtN += 1; }
+      if (t.abandonado) { cur.abandonos += 1; }
       byId.set(t.atendente_id, cur);
     }
     return atendentes.map((a) => {
-      const s = byId.get(a.id) ?? { tickets: 0, tmaSum: 0, tmaN: 0, csatSum: 0, csatN: 0 };
+      const s = byId.get(a.id) ?? { tickets: 0, tmaSum: 0, tmaN: 0, csatSum: 0, csatN: 0, tmeSum: 0, tmeN: 0, frtSum: 0, frtN: 0, abandonos: 0 };
       const tma = s.tmaN ? Math.round((s.tmaSum / s.tmaN / 60) * 10) / 10 : 0;
-      const csat = s.csatN ? Math.round(s.csatSum / s.csatN) : 0;
+      const csat = s.csatN ? Math.round((s.csatSum / s.csatN) * 10) / 10 : 0;
+      const tme = s.tmeN ? Math.round(s.tmeSum / s.tmeN) : null;
+      const frt = s.frtN ? Math.round(s.frtSum / s.frtN) : null;
+      const abandono = s.tickets ? Math.round((s.abandonos / s.tickets) * 100) : 0;
+
       const status: StatusKey = classMap[a.id] ?? "sem_analise";
       const score = Math.round(csat * 0.4 + Math.min(100, s.tickets) * 0.3 + Math.max(0, 100 - tma * 10) * 0.3);
-      return { ...a, tickets: s.tickets, tma, csat, status, score };
+      return { ...a, tickets: s.tickets, tma, csat, tme, frt, abandono, status, score };
     });
   }, [atendentes, tickets, classMap]);
 
@@ -128,7 +138,17 @@ function AtendentesPage() {
     setFrom(startOfMonth()); setTo(todayISO());
   }
 
+  const fmtTempo = (m: number | null) => m === null ? "—" : m > 60 ? `${Math.round((m / 60) * 10) / 10}h` : `${m}min`;
+
   const goDetail = (id: string) => navigate({ to: "/app/atendentes/$id", params: { id } });
+
+  const [csatDetailId, setCsatDetailId] = useState<string | null>(null);
+
+  const csatTickets = useMemo(() => {
+    if (!csatDetailId) return [];
+    return tickets.filter((t) => t.atendente_id === csatDetailId && t.csat_nota != null)
+      .sort((a, b) => new Date(b.criado_em || 0).getTime() - new Date(a.criado_em || 0).getTime());
+  }, [csatDetailId, tickets]);
 
   return (
     <div className="p-6 max-w-[1600px] mx-auto">
@@ -247,7 +267,15 @@ function AtendentesPage() {
               <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t">
                 <div><div className="text-xs text-muted-foreground">Tickets</div><div className="font-mono font-semibold tabular-nums">{a.tickets}</div></div>
                 <div><div className="text-xs text-muted-foreground">TMA</div><div className="font-mono font-semibold tabular-nums">{a.tma}h</div></div>
-                <div><div className="text-xs text-muted-foreground">CSAT</div><div className="font-mono font-semibold tabular-nums">{a.csat}%</div></div>
+                <div onClick={(e) => { e.stopPropagation(); setCsatDetailId(a.id); }} className="cursor-pointer hover:bg-muted/50 rounded p-1 -m-1 transition-colors">
+                  <div className="text-xs text-muted-foreground flex items-center gap-1">CSAT <ExternalLink className="h-3 w-3" /></div>
+                  <div className="font-mono font-semibold tabular-nums">{a.csat}</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 mt-2 pt-2 border-t border-dashed">
+                <div><div className="text-[10px] text-muted-foreground uppercase">TME</div><div className="font-mono text-sm tabular-nums">{fmtTempo(a.tme)}</div></div>
+                <div><div className="text-[10px] text-muted-foreground uppercase">FRT</div><div className="font-mono text-sm tabular-nums">{fmtTempo(a.frt)}</div></div>
+                <div><div className="text-[10px] text-muted-foreground uppercase">Abandono</div><div className="font-mono text-sm tabular-nums">{a.abandono}%</div></div>
               </div>
               <Button variant="outline" size="sm" className="w-full mt-4" onClick={(e) => { e.stopPropagation(); goDetail(a.id); }}>
                 Ver análise completa
@@ -265,6 +293,9 @@ function AtendentesPage() {
                 <TableHead>Equipe</TableHead>
                 <TableHead className="cursor-pointer" onClick={() => setOrderBy("tickets")}>Tickets <ArrowUpDown className="inline h-3 w-3" /></TableHead>
                 <TableHead className="cursor-pointer" onClick={() => setOrderBy("tma")}>TMA <ArrowUpDown className="inline h-3 w-3" /></TableHead>
+                <TableHead>TME</TableHead>
+                <TableHead>FRT</TableHead>
+                <TableHead>Abandono</TableHead>
                 <TableHead className="cursor-pointer" onClick={() => setOrderBy("csat")}>CSAT <ArrowUpDown className="inline h-3 w-3" /></TableHead>
                 <TableHead className="cursor-pointer" onClick={() => setOrderBy("score_desc")}>Score</TableHead>
                 <TableHead>Status</TableHead>
@@ -286,7 +317,14 @@ function AtendentesPage() {
                   <TableCell className="text-muted-foreground">{a.equipe ?? "—"}</TableCell>
                   <TableCell className="font-mono tabular-nums">{a.tickets}</TableCell>
                   <TableCell className="font-mono tabular-nums" style={{ color: a.tma > 4 ? "var(--destructive)" : undefined }}>{a.tma}h</TableCell>
-                  <TableCell className="font-mono tabular-nums" style={{ color: a.csat >= 85 ? "var(--success)" : undefined }}>{a.csat}%</TableCell>
+                  <TableCell className="font-mono tabular-nums text-muted-foreground text-xs">{fmtTempo(a.tme)}</TableCell>
+                  <TableCell className="font-mono tabular-nums text-muted-foreground text-xs">{fmtTempo(a.frt)}</TableCell>
+                  <TableCell className="font-mono tabular-nums text-muted-foreground text-xs">{a.abandono}%</TableCell>
+                  <TableCell>
+                    <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80 font-mono" onClick={(e) => { e.stopPropagation(); setCsatDetailId(a.id); }}>
+                      {a.csat} <ExternalLink className="h-3 w-3 ml-1" />
+                    </Badge>
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <span className="font-mono tabular-nums w-8">{a.score}</span>
@@ -307,6 +345,42 @@ function AtendentesPage() {
           </Table>
         </Card>
       )}
+
+      {/* MODAL DETALHES DE CSAT */}
+      <Dialog open={!!csatDetailId} onOpenChange={(o) => { if (!o) setCsatDetailId(null); }}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detalhamento de CSAT</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            {csatTickets.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-6">Nenhuma avaliação encontrada no período.</p>
+            ) : (
+              <div className="space-y-3">
+                {csatTickets.map(t => (
+                  <div key={t.id} className="p-3 border rounded-md text-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold">{t.numero ?? t.id}</span>
+                      <Badge variant={t.csat_nota && t.csat_nota >= 80 ? "default" : t.csat_nota && t.csat_nota >= 50 ? "secondary" : "destructive"}>
+                        Nota: {t.csat_nota}
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground mb-1">
+                      {new Date(t.criado_em || "").toLocaleDateString()} • {t.categoria ?? "Sem categoria"}
+                    </div>
+                    <div className="font-medium truncate">{t.assunto}</div>
+                    {t.csat_comentario && (
+                      <div className="mt-2 text-muted-foreground italic border-l-2 pl-2">
+                        "{t.csat_comentario}"
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

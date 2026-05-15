@@ -78,7 +78,7 @@ function RankingPage() {
         score_metas: Number(s.score_metas ?? 0),
         tickets: st?.n ?? 0,
         tma: st?.tmaN ? +(st.tmaSum / st.tmaN / 60).toFixed(1) : 0,
-        csat: st?.csatN ? Math.round(st.csatSum / st.csatN) : 0,
+        csat: st?.csatN ? Math.round((st.csatSum / st.csatN) * 10) / 10 : 0,
       };
     });
     setRows(r);
@@ -210,7 +210,7 @@ function RankingPage() {
                     <div className="hidden md:flex items-center gap-6 text-xs font-mono text-muted-foreground tabular-nums">
                       <span>{a.tickets} tickets</span>
                       <span>{a.tma}h TMA</span>
-                      <span>{a.csat}% CSAT</span>
+                      <span>{a.csat} CSAT</span>
                     </div>
                     <div className="flex gap-0.5">
                       {Array.from({ length: 5 }).map((_, i) => (

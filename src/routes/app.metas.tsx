@@ -28,7 +28,7 @@ type Meta = {
 const METRICAS: Record<string, { label: string; unidade: string; inverso: boolean }> = {
   tickets_mes:               { label: "Tickets / mês",           unidade: "",  inverso: false },
   tma_horas:                 { label: "TMA máximo",              unidade: "h", inverso: true  },
-  csat:                      { label: "CSAT mínimo",             unidade: "%", inverso: false },
+  csat:                      { label: "CSAT mínimo",             unidade: "",  inverso: false },
   resolucao_primeiro_contato:{ label: "Resolução 1º contato",    unidade: "%", inverso: false },
   primeira_resposta:         { label: "FRT máximo (1ª resposta)",unidade: "h", inverso: true  },
   tme_minutos:               { label: "TME máximo (espera)",     unidade: "min", inverso: true },
@@ -184,7 +184,7 @@ function MetasPage() {
     return {
       tickets_mes: total,
       tma_horas: tmaArr.length ? Math.round((tmaArr.reduce((a, b) => a + b, 0) / tmaArr.length / 60) * 10) / 10 : 0,
-      csat: csatArr.length ? Math.round(csatArr.reduce((a, b) => a + b, 0) / csatArr.length) : 0,
+      csat: csatArr.length ? Math.round((csatArr.reduce((a, b) => a + b, 0) / csatArr.length) * 10) / 10 : 0,
       resolucao_primeiro_contato: 0,
       primeira_resposta: frts.length ? Math.round((frts.reduce((a,b) => a+b, 0) / frts.length / 60) * 10) / 10 : 0,
       tme_minutos: tmes.length ? Math.round(tmes.reduce((a,b) => a+b, 0) / tmes.length) : 0,
@@ -213,7 +213,7 @@ function MetasPage() {
       out[k] = {
         tickets_mes: v.tickets_mes,
         tma_horas: v._tmaN ? Math.round((v._tmaSum / v._tmaN / 60) * 10) / 10 : 0,
-        csat: v._csatN ? Math.round(v._csatSum / v._csatN) : 0,
+        csat: v._csatN ? Math.round((v._csatSum / v._csatN) * 10) / 10 : 0,
         resolucao_primeiro_contato: 0,
         primeira_resposta: v._frtN ? Math.round((v._frtSum / v._frtN / 60) * 10) / 10 : 0,
         tme_minutos: v._tmeN ? Math.round(v._tmeSum / v._tmeN) : 0,

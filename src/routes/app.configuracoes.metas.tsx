@@ -32,7 +32,7 @@ function MetasConfig() {
                   <SelectContent>
                     <SelectItem value="tickets_mes">Tickets / mês</SelectItem>
                     <SelectItem value="tma_horas">TMA (horas)</SelectItem>
-                    <SelectItem value="csat">CSAT (%)</SelectItem>
+                    <SelectItem value="csat">CSAT</SelectItem>
                     <SelectItem value="resolucao_primeiro_contato">Resol. 1º contato</SelectItem>
                     <SelectItem value="primeira_resposta">1ª resposta (h)</SelectItem>
                   </SelectContent>

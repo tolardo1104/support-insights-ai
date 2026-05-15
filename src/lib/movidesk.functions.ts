@@ -6,7 +6,7 @@ const MOVIDESK_BASE = "https://api.movidesk.com/public/v1";
 const SELECT_FIELDS =
   "id,type,subject,category,urgency,status,baseStatus,origin,createdDate,resolvedIn,closedIn,lastUpdate,reopenedIn,ownerTeam,tags";
 const EXPAND_FIELDS =
-  "owner($select=id,businessName,email),clients($select=id,businessName,email),actions($select=id,type,createdDate,createdBy;$top=5;$orderby=createdDate asc),satisfactionSurveyResponses";
+  "owner($select=id,businessName,email),clients($select=id,businessName,email),actions($select=id,type,createdDate,createdBy;$top=50;$orderby=createdDate asc),satisfactionSurveyResponses";
 
 function tratarErroMovidesk(status: number, body: any): string {
   if (status === 400) return `Campo inválido na query Movidesk. ${body?.message ?? ""}`.trim();
@@ -76,6 +76,7 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
     try {
       while (true) {
         if (skip > 0) await new Promise((r) => setTimeout(r, 6000));
+        console.log(`[Sync] Buscando tickets... skip: ${skip}`);
         const url =
           `${MOVIDESK_BASE}/tickets?token=${encodeURIComponent(apiKey)}` +
           `&$select=${SELECT_FIELDS}` +
@@ -111,23 +112,38 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
       return { ok: false, importados: tickets.length, message: msg };
     }
 
-    // Upsert atendentes
+    // Upsert atendentes em lote
     const ownersMap = new Map<string, { nome: string; email: string | null }>();
     for (const t of tickets) {
       const o = t.owner;
       if (o?.id) ownersMap.set(String(o.id), { nome: o.businessName ?? "—", email: o.email ?? null });
     }
+    
+    if (ownersMap.size > 0) {
+      const atendentesPayload = Array.from(ownersMap.entries()).map(([movideskId, info]) => ({
+        organizacao_id: orgId,
+        movidesk_id: movideskId,
+        nome: info.nome,
+        email: info.email,
+      }));
+      
+      await supabase.from("atendentes").upsert(atendentesPayload, {
+        onConflict: "organizacao_id,movidesk_id"
+      });
+    }
+
     const atendentesByMovideskId = new Map<string, string>();
-    for (const [movideskId, info] of ownersMap) {
-      const { data: existing } = await supabase
-        .from("atendentes").select("id").eq("organizacao_id", orgId).eq("movidesk_id", movideskId).maybeSingle();
-      if (existing) {
-        atendentesByMovideskId.set(movideskId, existing.id);
-      } else {
-        const { data: ins } = await supabase
-          .from("atendentes").insert({ organizacao_id: orgId, movidesk_id: movideskId, nome: info.nome, email: info.email })
-          .select("id").single();
-        if (ins) atendentesByMovideskId.set(movideskId, ins.id);
+    if (ownersMap.size > 0) {
+      const { data: allAtendentes } = await supabase
+        .from("atendentes")
+        .select("id, movidesk_id")
+        .eq("organizacao_id", orgId)
+        .in("movidesk_id", Array.from(ownersMap.keys()));
+        
+      if (allAtendentes) {
+        for (const a of allAtendentes) {
+          if (a.movidesk_id) atendentesByMovideskId.set(a.movidesk_id, a.id);
+        }
       }
     }
 
@@ -138,32 +154,44 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
       let skipSurveys = 0;
       while (true) {
         if (skipSurveys > 0) await new Promise((r) => setTimeout(r, 6000));
+        console.log(`[Sync] Buscando surveys... skip: ${skipSurveys}`);
         const sUrl = `${MOVIDESK_BASE}/survey/responses?token=${encodeURIComponent(apiKey)}&$filter=responseDate ge ${ini} and responseDate le ${fim}&$select=ticketId,type,value&$top=1000&$skip=${skipSurveys}`;
         const sRes = await fetch(sUrl);
         if (!sRes.ok) break;
         const sBody = await sRes.json();
-        // A API retorna { hasMore, items: [...] } — não um array direto
-        const sItems: any[] = Array.isArray(sBody) ? sBody : (sBody?.items ?? []);
+        // A API pode retornar erro ou formatos inesperados
+        if (!sBody) break;
+        const sItems: any[] = Array.isArray(sBody) ? sBody : (Array.isArray(sBody?.items) ? sBody.items : []);
         if (sItems.length === 0) break;
         for (const s of sItems) {
           if (!s.ticketId || typeof s.value !== "number") continue;
           const tId = String(s.ticketId);
           if (s.type === 3) {
-            npsMap.set(tId, Math.max(0, Math.min(10, s.value)));
-          } else if (s.type === 2) {
-            csatMap.set(tId, s.value >= 4 ? 100 : 0);
-          } else if (s.type === 1 || s.type === 4) {
-            csatMap.set(tId, s.value === 1 ? 100 : 0);
+            npsMap.set(tId, s.value); // NPS (0 a 10)
+          } else if (s.type === 2 || s.type === 4) {
+            csatMap.set(tId, s.value); // Sorrisos ou Estrelas (1 a 5)
+          } else if (s.type === 1) {
+            csatMap.set(tId, s.value === 1 ? 5 : 1); // Positivo/Negativo convertido para 5 ou 1
           }
         }
         skipSurveys += 1000;
-        if (!sBody?.hasMore && sItems.length < 1000) break;
+        
+        // Critério de parada mais seguro para evitar loop infinito
+        if (sItems.length < 1000) break;
+        if (skipSurveys >= 30000) {
+          console.warn("[Sync] Limite de segurança de surveys atingido (30000). Interrompendo loop.");
+          break;
+        }
       }
     } catch (e) {
       console.error("Erro ao buscar surveys", e);
     }
 
     let count = 0;
+    let csatRespondidosCount = 0;
+    let npsRespondidosCount = 0;
+    const ticketsPayloads = [];
+
     for (const t of tickets) {
       const ownerMovideskId = t.owner?.id ? String(t.owner.id) : null;
       const atendenteId = ownerMovideskId ? atendentesByMovideskId.get(ownerMovideskId) ?? null : null;
@@ -200,7 +228,10 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
       const csatNota = csatMap.get(String(t.id)) ?? null;
       const npsNota = npsMap.get(String(t.id)) ?? null;
 
-      const payload = {
+      if (csatNota !== null) csatRespondidosCount++;
+      if (npsNota !== null) npsRespondidosCount++;
+
+      ticketsPayloads.push({
         organizacao_id: orgId,
         movidesk_ticket_id: String(t.id),
         assunto: t.subject ?? null,
@@ -222,16 +253,14 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
         frt_minutos: frtMinutos,
         abandonado,
         sincronizado_em: new Date().toISOString(),
-      };
-
-      const { data: existing } = await supabase
-        .from("tickets_cache").select("id").eq("organizacao_id", orgId).eq("movidesk_ticket_id", String(t.id)).maybeSingle();
-      if (existing) {
-        await supabase.from("tickets_cache").update(payload).eq("id", existing.id);
-      } else {
-        await supabase.from("tickets_cache").insert(payload);
-      }
+      });
       count++;
+    }
+
+    if (ticketsPayloads.length > 0) {
+      await supabase.from("tickets_cache").upsert(ticketsPayloads, {
+        onConflict: "organizacao_id,movidesk_ticket_id"
+      });
     }
 
     await supabase.from("configuracoes").update({
@@ -246,5 +275,11 @@ export const syncMovideskTickets = createServerFn({ method: "POST" })
       total_importado: count, status: "sucesso",
     });
 
-    return { ok: true, importados: count, message: `${count} tickets sincronizados` };
+    return { 
+      ok: true, 
+      importados: count, 
+      csat_respondidos: csatRespondidosCount,
+      nps_respondidos: npsRespondidosCount,
+      message: `${count} tickets sincronizados` 
+    };
   });

@@ -16,8 +16,8 @@ export const Route = createFileRoute("/app/atendentes/$id")({ component: Atenden
 type Atendente = { id: string; nome: string; equipe: string | null; email: string | null; criado_em: string | null };
 type Ticket = {
   id: string; movidesk_ticket_id: string | null; assunto: string | null; categoria: string | null;
-  status: string | null; criado_em: string | null; resolvido_em: string | null;
-  tma_minutos: number | null; csat_nota: number | null;
+  tma_minutos: number | null; csat_nota: number | null; nps_nota: number | null;
+  frt_minutos: number | null; tme_minutos: number | null; abandonado: boolean;
 };
 type AnaliseIA = { id: string; resultado: any; criado_em: string };
 
@@ -36,9 +36,7 @@ function AtendenteDetail() {
   async function load() {
     setLoading(true);
     const [{ data: a }, { data: t }, { data: i }] = await Promise.all([
-      supabase.from("atendentes").select("id,nome,equipe,email,criado_em").eq("id", id).maybeSingle(),
-      supabase.from("tickets_cache").select("id,movidesk_ticket_id,assunto,categoria,status,criado_em,resolvido_em,tma_minutos,csat_nota").eq("atendente_id", id).order("criado_em", { ascending: false }).limit(50),
-      supabase.from("analises_ia").select("id,resultado,criado_em").eq("tipo", "atendente").eq("atendente_id", id).order("criado_em", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("tickets_cache").select("id,movidesk_ticket_id,assunto,categoria,status,criado_em,resolvido_em,tma_minutos,csat_nota,nps_nota,frt_minutos,tme_minutos,abandonado").eq("atendente_id", id).order("criado_em", { ascending: false }).limit(50),
     ]);
     if (!a) {
       toast.error("Atendente não encontrado");
@@ -53,14 +51,25 @@ function AtendenteDetail() {
   useEffect(() => { load(); }, [id]);
 
   const metrics = useMemo(() => {
-    const tmaArr = tickets.map((t) => t.tma_minutos).filter((v): v is number => v != null);
-    const csatArr = tickets.map((t) => t.csat_nota).filter((v): v is number => v != null);
+    const tmaArr = tickets.map((t) => t.tma_minutos).filter((v): v is number => v !== null);
+    const csatArr = tickets.map((t) => t.csat_nota).filter((v): v is number => v !== null);
+    const frtArr = tickets.map((t) => t.frt_minutos).filter((v): v is number => v !== null);
+    const tmeArr = tickets.map((t) => t.tme_minutos).filter((v): v is number => v !== null);
     const resolvidos = tickets.filter((t) => t.resolvido_em).length;
+    const abandonados = tickets.filter((t) => t.abandonado).length;
+
+    const taxaAbandono = frtArr.length > 0 || tmeArr.length > 0
+      ? (tickets.length ? Math.round((abandonados / tickets.length) * 100) : 0)
+      : null;
+
     return {
       total: tickets.length,
-      tma: tmaArr.length ? Math.round((tmaArr.reduce((a, b) => a + b, 0) / tmaArr.length / 60) * 10) / 10 : 0,
-      csat: csatArr.length ? Math.round(csatArr.reduce((a, b) => a + b, 0) / csatArr.length) : 0,
       resolvidos,
+      tma: tmaArr.length ? Math.round((tmaArr.reduce((a, b) => a + b, 0) / tmaArr.length / 60) * 10) / 10 : null,
+      csat: csatArr.length ? Math.round((csatArr.reduce((a, b) => a + b, 0) / csatArr.length) * 10) / 10 : null,
+      frt: frtArr.length ? Math.round(frtArr.reduce((a, b) => a + b, 0) / frtArr.length) : null,
+      tme: tmeArr.length ? Math.round(tmeArr.reduce((a, b) => a + b, 0) / tmeArr.length) : null,
+      abandono: taxaAbandono
     };
   }, [tickets]);
 
@@ -118,11 +127,24 @@ function AtendenteDetail() {
         </TabsList>
 
         <TabsContent value="metricas" className="space-y-4 mt-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <MetricCard label="Tickets" value={metrics.total} />
-            <MetricCard label="Resolvidos" value={metrics.resolvidos} />
-            <MetricCard label="TMA" value={metrics.tma} suffix="h" />
-            <MetricCard label="CSAT" value={metrics.csat} suffix="%" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+            <MetricCard compact label="Tickets" value={metrics.total} />
+            <MetricCard compact label="Resolvidos" value={metrics.resolvidos} />
+            <div title={metrics.tma === null ? "Sincronize novamente para calcular esta métrica" : undefined}>
+              <MetricCard compact label="TMA" value={metrics.tma === null ? "—" : metrics.tma} suffix={metrics.tma !== null ? "h" : ""} />
+            </div>
+            <div title={metrics.csat === null ? "Sincronize novamente para calcular esta métrica" : undefined}>
+              <MetricCard compact label="CSAT" value={metrics.csat ?? "—"} />
+            </div>
+            <div title={metrics.frt === null ? "Sincronize novamente para calcular esta métrica" : undefined}>
+              <MetricCard compact label="FRT" value={metrics.frt === null ? "—" : metrics.frt > 60 ? `${Math.round((metrics.frt / 60) * 10) / 10}h` : `${metrics.frt}min`} />
+            </div>
+            <div title={metrics.tme === null ? "Sincronize novamente para calcular esta métrica" : undefined}>
+              <MetricCard compact label="TME" value={metrics.tme === null ? "—" : metrics.tme > 60 ? `${Math.round((metrics.tme / 60) * 10) / 10}h` : `${metrics.tme}min`} />
+            </div>
+            <div title={metrics.abandono === null ? "Sincronize novamente para calcular esta métrica" : undefined}>
+              <MetricCard compact label="Abandono" value={metrics.abandono ?? "—"} suffix={metrics.abandono !== null ? "%" : ""} />
+            </div>
           </div>
           <Card className="p-5">
             <h3 className="text-sm font-semibold mb-4">Tickets por semana</h3>
@@ -182,9 +204,10 @@ function AtendenteDetail() {
                     </div>
                     <h4 className="font-medium mt-1 truncate">{t.assunto ?? "—"}</h4>
                   </div>
-                  <div className="text-right text-xs text-muted-foreground shrink-0">
-                    <div>TMA: <span className="font-mono">{t.tma_minutos != null ? `${Math.round(t.tma_minutos / 60 * 10) / 10}h` : "—"}</span></div>
-                    {t.csat_nota != null && <div>CSAT: <span className="font-mono">{t.csat_nota}</span></div>}
+                  <div className="text-right text-xs text-muted-foreground shrink-0 space-y-1">
+                    <div>TMA: <span className="font-mono bg-muted px-1 rounded">{t.tma_minutos != null ? `${Math.round(t.tma_minutos / 60 * 10) / 10}h` : "—"}</span></div>
+                    {t.csat_nota != null && <div>CSAT: <span className="font-mono bg-primary/10 text-primary px-1 rounded font-semibold">{t.csat_nota}</span></div>}
+                    {t.nps_nota != null && <div>NPS: <span className="font-mono bg-success/10 text-success px-1 rounded font-semibold">{t.nps_nota}</span></div>}
                   </div>
                 </div>
               </Card>

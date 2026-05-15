@@ -74,7 +74,7 @@ function AnaliseIaPage() {
     }
   }
 
-  // Carregar última análise geral e histórico ao montar
+  // Carregar última análise geral, estratégica e histórico ao montar
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -87,8 +87,44 @@ function AnaliseIaPage() {
         setResultadoGeral((data[0].resultado as any)?.texto ?? null);
         setHistoricoGeral(data);
       }
+
+      const { data: dataEstrat } = await supabase
+        .from("analises_ia")
+        .select("resultado")
+        .eq("tipo", "estrategica")
+        .order("criado_em", { ascending: false })
+        .limit(1);
+      if (dataEstrat && dataEstrat.length > 0) {
+        setResultadoEstrategico((dataEstrat[0].resultado as any)?.texto ?? null);
+      }
     })();
   }, []);
+
+  // Carregar última análise do atendente ao selecionar
+  useEffect(() => {
+    if (!atendenteSel) {
+      setResultadoAtendente(null);
+      setFeedbackPos(null);
+      setFeedbackNeg(null);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from("analises_ia")
+        .select("resultado")
+        .eq("tipo", "atendente")
+        .eq("atendente_id", atendenteSel)
+        .order("criado_em", { ascending: false })
+        .limit(1);
+      if (data && data.length > 0) {
+        setResultadoAtendente((data[0].resultado as any)?.texto ?? null);
+      } else {
+        setResultadoAtendente(null);
+      }
+      setFeedbackPos(null);
+      setFeedbackNeg(null);
+    })();
+  }, [atendenteSel]);
 
   // Análise geral — SOBRESCREVE a mais recente (upsert por tipo+período)
   const execGeral = async () => {
@@ -180,6 +216,7 @@ function AnaliseIaPage() {
 4. INICIATIVAS PRIORITÁRIAS: top 3 ações que mais impactariam o desempenho
 5. RISCOS IDENTIFICADOS: o que pode piorar se não for endereçado
 Seja direto, use números e seja acionável.`,
+          tipoAnalise: "estrategica",
         },
       });
       if (r.ok) {

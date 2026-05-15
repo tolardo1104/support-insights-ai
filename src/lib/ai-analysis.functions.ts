@@ -26,12 +26,14 @@ export const analyzePeriod = createServerFn({ method: "POST" })
     dataInicio?: string;
     dataFim?: string;
     promptOverride?: string;
+    tipoAnalise?: string;
   }) =>
     z.object({
       periodo: z.enum(["semana", "mes", "trimestre"]).default("mes"),
       dataInicio: z.string().optional(),
       dataFim: z.string().optional(),
       promptOverride: z.string().optional(),
+      tipoAnalise: z.string().optional(),
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -100,10 +102,12 @@ export const analyzePeriod = createServerFn({ method: "POST" })
       const { text } = await generateText({ model, prompt });
 
       // Salvar no banco sempre (sobrescreve para análise geral normal; cria novo para overrides)
-      if (!data.promptOverride) {
+      const tipoSalvar = data.tipoAnalise || (data.promptOverride ? null : "geral");
+      
+      if (tipoSalvar) {
         await supabase.from("analises_ia").insert({
           organizacao_id: orgId,
-          tipo: "geral",
+          tipo: tipoSalvar,
           ia_provedor: cfg?.ia_provedor,
           ia_modelo: cfg?.ia_modelo,
           resultado: { texto: text, totais } as any,
@@ -141,15 +145,22 @@ export const analyzeAtendente = createServerFn({ method: "POST" })
     const model = getProviderAndModel(cfg?.ia_provedor || "gemini", apiKey, cfg?.ia_modelo);
 
     const prompt = (cfg?.ia_prompt_analise_atendente || "").replace("{NOME}", atend.nome) +
-      "\n\nTICKETS:\n" + tickets.map((t: any) => `- [${t.categoria || "—"}] ${t.assunto} | TMA ${t.tma_minutos}min | CSAT ${t.csat_nota ?? "—"}`).join("\n");
+      "\n\nTICKETS:\n" + tickets.map((t: any) => `- [${t.categoria || "—"}] ${t.assunto} | TMA ${t.tma_minutos}min | CSAT ${t.csat_nota ?? "—"}`).join("\n") +
+      "\n\nIMPORTANTE: Forneça a sua análise em texto, e no final escreva exatamente 'CLASSIFICACAO: DESTAQUE', 'CLASSIFICACAO: REGULAR' ou 'CLASSIFICACAO: ATENCAO' com base na sua avaliação geral do atendente.";
 
     try {
       const { text } = await generateText({ model, prompt });
 
+      let classificacao = "regular";
+      const match = text.match(/CLASSIFICACAO:\s*(DESTAQUE|REGULAR|ATENCAO|ATENÇÃO)/i);
+      if (match) {
+        classificacao = match[1].toLowerCase().replace("atenção", "atencao");
+      }
+
       await supabase.from("analises_ia").insert({
         organizacao_id: orgId, atendente_id: data.atendenteId, tipo: "atendente",
         ia_provedor: cfg?.ia_provedor, ia_modelo: cfg?.ia_modelo,
-        resultado: { texto: text },
+        resultado: { texto: text, classificacao },
       });
 
       return { ok: true, resultado: text };
