@@ -28,6 +28,7 @@ function IntegracaoConfig() {
   const [sistema, setSistema] = useState("movidesk");
   const [testing, setTesting] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
   const today = new Date();
@@ -124,12 +125,58 @@ function IntegracaoConfig() {
   const sync = async () => {
     if (dataInicio > dataFim) return toast.error("Data início deve ser anterior à data fim");
     setSyncing(true);
+    setSyncProgress("");
     try {
-      const r = await syncFn({ data: { dataInicio: fmt(dataInicio), dataFim: fmt(dataFim) } });
-      r.ok ? toast.success(r.message) : toast.error(r.message);
+      // Divide o período em janelas de 7 dias para evitar timeout do worker
+      const CHUNK_DAYS = 7;
+      const chunks: { ini: Date; fim: Date }[] = [];
+      let cursor = new Date(dataInicio);
+      while (cursor <= dataFim) {
+        const end = new Date(cursor);
+        end.setDate(end.getDate() + CHUNK_DAYS - 1);
+        if (end > dataFim) end.setTime(dataFim.getTime());
+        chunks.push({ ini: new Date(cursor), fim: new Date(end) });
+        cursor = new Date(end);
+        cursor.setDate(cursor.getDate() + 1);
+      }
+
+      let totalImportados = 0;
+      let totalCsat = 0;
+      let totalNps = 0;
+      let falhas = 0;
+
+      for (let i = 0; i < chunks.length; i++) {
+        const c = chunks[i];
+        setSyncProgress(`Lote ${i + 1}/${chunks.length} (${fmt(c.ini)} → ${fmt(c.fim)})...`);
+        try {
+          const r = await syncFn({ data: { dataInicio: fmt(c.ini), dataFim: fmt(c.fim) } });
+          if (r.ok) {
+            totalImportados += r.importados ?? 0;
+            totalCsat += (r as any).csat_respondidos ?? 0;
+            totalNps += (r as any).nps_respondidos ?? 0;
+          } else {
+            falhas++;
+            toast.error(`Lote ${i + 1}: ${r.message}`);
+          }
+        } catch (e: any) {
+          falhas++;
+          toast.error(`Lote ${i + 1} falhou: ${e?.message ?? "timeout"}`);
+        }
+      }
+
+      setSyncProgress("");
+      if (falhas === 0) {
+        toast.success(`${totalImportados} tickets sincronizados (CSAT: ${totalCsat}, NPS: ${totalNps})`);
+      } else {
+        toast.warning(`${totalImportados} tickets sincronizados, ${falhas} lote(s) com erro`);
+      }
       await loadLogs();
-    } catch (e: any) { toast.error(e.message); }
-    finally { setSyncing(false); }
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setSyncing(false);
+      setSyncProgress("");
+    }
   };
 
   return (
