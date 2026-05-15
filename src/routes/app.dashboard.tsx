@@ -327,9 +327,9 @@ function Dashboard() {
           icon={<TicketIcon className="h-4 w-4" />}
           trend={trend(metricas.total, metricasPrev.total)}
           meta={metas.volume} className="h-full" />
-        <MetricCard compact label="TMA médio" value={loading ? "—" : metricas.tmaMedio} suffix="h"
+        <MetricCard compact label="TMA médio" value={loading ? "—" : (metricas.tmaMedio ?? "—")} suffix="h"
           icon={<Clock className="h-4 w-4" />}
-          trend={trend(metricas.tmaMedio, metricasPrev.tmaMedio)}
+          trend={metricas.tmaMedio !== null && metricasPrev.tmaMedio !== null ? trend(metricas.tmaMedio, metricasPrev.tmaMedio) : null}
           meta={metas.tma} lowerIsBetter className="h-full" />
       </div>
 

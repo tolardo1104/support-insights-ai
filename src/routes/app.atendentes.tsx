@@ -360,7 +360,7 @@ function AtendentesPage() {
                 {csatTickets.map(t => (
                   <div key={t.id} className="p-3 border rounded-md text-sm">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold">{t.numero ?? t.id}</span>
+                      <span className="font-semibold">{t.movidesk_ticket_id ?? t.id}</span>
                       <Badge variant={t.csat_nota && t.csat_nota >= 80 ? "default" : t.csat_nota && t.csat_nota >= 50 ? "secondary" : "destructive"}>
                         Nota: {t.csat_nota}
                       </Badge>
@@ -369,11 +369,6 @@ function AtendentesPage() {
                       {new Date(t.criado_em || "").toLocaleDateString()} • {t.categoria ?? "Sem categoria"}
                     </div>
                     <div className="font-medium truncate">{t.assunto}</div>
-                    {t.csat_comentario && (
-                      <div className="mt-2 text-muted-foreground italic border-l-2 pl-2">
-                        "{t.csat_comentario}"
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>

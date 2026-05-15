@@ -36,7 +36,9 @@ function AtendenteDetail() {
   async function load() {
     setLoading(true);
     const [{ data: a }, { data: t }, { data: i }] = await Promise.all([
+      supabase.from("atendentes").select("*").eq("id", id).maybeSingle(),
       supabase.from("tickets_cache").select("id,movidesk_ticket_id,assunto,categoria,status,criado_em,resolvido_em,tma_minutos,csat_nota,nps_nota,frt_minutos,tme_minutos,abandonado").eq("atendente_id", id).order("criado_em", { ascending: false }).limit(50),
+      supabase.from("analises_ia").select("*").eq("atendente_id", id).order("criado_em", { ascending: false }).limit(1).maybeSingle(),
     ]);
     if (!a) {
       toast.error("Atendente não encontrado");
