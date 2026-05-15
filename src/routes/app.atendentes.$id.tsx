@@ -16,6 +16,7 @@ export const Route = createFileRoute("/app/atendentes/$id")({ component: Atenden
 type Atendente = { id: string; nome: string; equipe: string | null; email: string | null; criado_em: string | null };
 type Ticket = {
   id: string; movidesk_ticket_id: string | null; assunto: string | null; categoria: string | null;
+  status: string | null; criado_em: string | null; resolvido_em: string | null;
   tma_minutos: number | null; csat_nota: number | null; nps_nota: number | null;
   frt_minutos: number | null; tme_minutos: number | null; abandonado: boolean;
 };
