@@ -26,6 +26,7 @@ import { Route as AppConfiguracoesMetasRouteImport } from './routes/app.configur
 import { Route as AppConfiguracoesIntegracaoRouteImport } from './routes/app.configuracoes.integracao'
 import { Route as AppConfiguracoesIaRouteImport } from './routes/app.configuracoes.ia'
 import { Route as AppConfiguracoesChatbotPromptRouteImport } from './routes/app.configuracoes.chatbot-prompt'
+import { Route as AppConfiguracoesChatbotConhecimentoRouteImport } from './routes/app.configuracoes.chatbot-conhecimento'
 import { Route as AppConfiguracoesChatbotRouteImport } from './routes/app.configuracoes.chatbot'
 import { Route as AppAtendentesIdRouteImport } from './routes/app.atendentes.$id'
 
@@ -116,6 +117,12 @@ const AppConfiguracoesChatbotPromptRoute =
     path: '/chatbot-prompt',
     getParentRoute: () => AppConfiguracoesRoute,
   } as any)
+const AppConfiguracoesChatbotConhecimentoRoute =
+  AppConfiguracoesChatbotConhecimentoRouteImport.update({
+    id: '/chatbot-conhecimento',
+    path: '/chatbot-conhecimento',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
 const AppConfiguracoesChatbotRoute = AppConfiguracoesChatbotRouteImport.update({
   id: '/chatbot',
   path: '/chatbot',
@@ -141,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/app/atendentes/$id': typeof AppAtendentesIdRoute
   '/app/configuracoes/chatbot': typeof AppConfiguracoesChatbotRoute
+  '/app/configuracoes/chatbot-conhecimento': typeof AppConfiguracoesChatbotConhecimentoRoute
   '/app/configuracoes/chatbot-prompt': typeof AppConfiguracoesChatbotPromptRoute
   '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
   '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
@@ -160,6 +168,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/app/atendentes/$id': typeof AppAtendentesIdRoute
   '/app/configuracoes/chatbot': typeof AppConfiguracoesChatbotRoute
+  '/app/configuracoes/chatbot-conhecimento': typeof AppConfiguracoesChatbotConhecimentoRoute
   '/app/configuracoes/chatbot-prompt': typeof AppConfiguracoesChatbotPromptRoute
   '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
   '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
@@ -182,6 +191,7 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/app/atendentes/$id': typeof AppAtendentesIdRoute
   '/app/configuracoes/chatbot': typeof AppConfiguracoesChatbotRoute
+  '/app/configuracoes/chatbot-conhecimento': typeof AppConfiguracoesChatbotConhecimentoRoute
   '/app/configuracoes/chatbot-prompt': typeof AppConfiguracoesChatbotPromptRoute
   '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
   '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
@@ -205,6 +215,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/atendentes/$id'
     | '/app/configuracoes/chatbot'
+    | '/app/configuracoes/chatbot-conhecimento'
     | '/app/configuracoes/chatbot-prompt'
     | '/app/configuracoes/ia'
     | '/app/configuracoes/integracao'
@@ -224,6 +235,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/app/atendentes/$id'
     | '/app/configuracoes/chatbot'
+    | '/app/configuracoes/chatbot-conhecimento'
     | '/app/configuracoes/chatbot-prompt'
     | '/app/configuracoes/ia'
     | '/app/configuracoes/integracao'
@@ -245,6 +257,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/atendentes/$id'
     | '/app/configuracoes/chatbot'
+    | '/app/configuracoes/chatbot-conhecimento'
     | '/app/configuracoes/chatbot-prompt'
     | '/app/configuracoes/ia'
     | '/app/configuracoes/integracao'
@@ -380,6 +393,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesChatbotPromptRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
+    '/app/configuracoes/chatbot-conhecimento': {
+      id: '/app/configuracoes/chatbot-conhecimento'
+      path: '/chatbot-conhecimento'
+      fullPath: '/app/configuracoes/chatbot-conhecimento'
+      preLoaderRoute: typeof AppConfiguracoesChatbotConhecimentoRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
     '/app/configuracoes/chatbot': {
       id: '/app/configuracoes/chatbot'
       path: '/chatbot'
@@ -411,6 +431,7 @@ const AppAtendentesRouteWithChildren = AppAtendentesRoute._addFileChildren(
 
 interface AppConfiguracoesRouteChildren {
   AppConfiguracoesChatbotRoute: typeof AppConfiguracoesChatbotRoute
+  AppConfiguracoesChatbotConhecimentoRoute: typeof AppConfiguracoesChatbotConhecimentoRoute
   AppConfiguracoesChatbotPromptRoute: typeof AppConfiguracoesChatbotPromptRoute
   AppConfiguracoesIaRoute: typeof AppConfiguracoesIaRoute
   AppConfiguracoesIntegracaoRoute: typeof AppConfiguracoesIntegracaoRoute
@@ -421,6 +442,8 @@ interface AppConfiguracoesRouteChildren {
 
 const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesChatbotRoute: AppConfiguracoesChatbotRoute,
+  AppConfiguracoesChatbotConhecimentoRoute:
+    AppConfiguracoesChatbotConhecimentoRoute,
   AppConfiguracoesChatbotPromptRoute: AppConfiguracoesChatbotPromptRoute,
   AppConfiguracoesIaRoute: AppConfiguracoesIaRoute,
   AppConfiguracoesIntegracaoRoute: AppConfiguracoesIntegracaoRoute,
