@@ -184,13 +184,13 @@ function WhatsAppPage() {
               <div className="flex flex-wrap gap-2 pt-2">
                 <Button variant="outline" size="sm" onClick={() => editar(c)}><Pencil className="h-3.5 w-3.5 mr-1" />Editar</Button>
                 <Button variant="outline" size="sm" onClick={() => definirAtiva(c.id)} disabled={c.ativo}><CheckCircle className="h-3.5 w-3.5 mr-1" />Definir como ativa</Button>
-                {c.provedor === "evolution_qr" && c.status !== "conectado" && (
+                {suportaQR(c.provedor) && c.status !== "conectado" && (
                   <Button size="sm" onClick={() => conectarQR(c)} disabled={conectandoId === c.id}>
                     {conectandoId === c.id ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <QrCode className="h-3.5 w-3.5 mr-1" />}
                     {c.qr_code_base64 ? "Gerar novo QR" : "Conectar / Gerar QR"}
                   </Button>
                 )}
-                {(c.status === "desconectado" || c.status === "erro") && c.provedor !== "evolution_qr" && (
+                {(c.status === "desconectado" || c.status === "erro") && !suportaQR(c.provedor) && (
                   <Button variant="outline" size="sm" onClick={() => reconectar(c)}><RefreshCw className="h-3.5 w-3.5 mr-1" />Reconectar</Button>
                 )}
                 <AlertDialog>
