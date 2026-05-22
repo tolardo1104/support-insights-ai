@@ -86,11 +86,50 @@ function WhatsAppPage() {
     await (supabase as any).from("conexoes_whatsapp").update({ ativo: true }).eq("id", id);
     toast.success("Conexão ativa definida"); await carregar(orgId);
   }
-  async function reconectar(id: string) {
-    await (supabase as any).from("conexoes_whatsapp").update({ status: "aguardando_qr" }).eq("id", id);
-    toast.info("Solicitação de reconexão registrada");
-    if (orgId) await carregar(orgId);
+  const conectarFn = useServerFn(conectarEvolutionQR);
+  const statusFn = useServerFn(checarStatusEvolution);
+  const [conectandoId, setConectandoId] = useState<string | null>(null);
+
+  async function conectarQR(c: any) {
+    if (c.provedor !== "evolution_qr") {
+      return toast.error("Geração de QR só está disponível para Evolution API — QR Code");
+    }
+    if (!c.url_servidor || !c.api_key_provedor || !c.instance_name) {
+      return toast.error("Configure URL, API Key e nome da instância antes de conectar");
+    }
+    try {
+      setConectandoId(c.id);
+      await conectarFn({ data: { conexaoId: c.id } });
+      toast.success("QR Code gerado. Escaneie com o WhatsApp.");
+      if (orgId) await carregar(orgId);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao gerar QR Code");
+    } finally {
+      setConectandoId(null);
+    }
   }
+
+  async function reconectar(c: any) {
+    await conectarQR(c);
+  }
+
+  // Polling de status enquanto há conexão aguardando QR
+  useEffect(() => {
+    const aguardando = conexoes.filter((c) => c.status === "aguardando_qr" && c.provedor === "evolution_qr");
+    if (aguardando.length === 0) return;
+    const interval = setInterval(async () => {
+      for (const c of aguardando) {
+        try {
+          const r: any = await statusFn({ data: { conexaoId: c.id } });
+          if (r?.status === "conectado") {
+            toast.success(`${c.nome} conectado!`);
+            if (orgId) await carregar(orgId);
+          }
+        } catch { /* ignore */ }
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [conexoes, orgId, statusFn]);
 
   const up = (p: any) => setForm((f) => ({ ...f, ...p }));
 
