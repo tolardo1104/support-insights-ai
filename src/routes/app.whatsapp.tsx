@@ -18,7 +18,8 @@ import { conectarEvolutionQR, checarStatusEvolution } from "@/lib/whatsapp.funct
 export const Route = createFileRoute("/app/whatsapp")({ component: WhatsAppPage });
 
 const PROVEDORES = [
-  { v: "evolution_qr", l: "Evolution API — QR Code" },
+  { v: "uazapi", l: "UAZAPI — QR Code (tem plano grátis) ⭐" },
+  { v: "evolution_qr", l: "Evolution API — QR Code (self-hosted)" },
   { v: "evolution_official", l: "Evolution API — Meta Oficial" },
   { v: "zapi", l: "Z-API" },
   { v: "meta_oficial", l: "Meta API Oficial" },
@@ -34,7 +35,7 @@ const STATUS_BADGE: Record<string, string> = {
 };
 
 function emptyForm() {
-  return { nome: "", provedor: "evolution_qr", numero_telefone: "", url_servidor: "", api_key_provedor: "", instance_name: "", webhook_url: "" };
+  return { nome: "", provedor: "uazapi", numero_telefone: "", url_servidor: "", api_key_provedor: "", instance_name: "", webhook_url: "" };
 }
 
 function WhatsAppPage() {
