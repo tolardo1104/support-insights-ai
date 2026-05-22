@@ -9,9 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Phone, Pencil, Trash2, CheckCircle, RefreshCw, MessageCircle } from "lucide-react";
+import { Plus, Phone, Pencil, Trash2, CheckCircle, RefreshCw, MessageCircle, QrCode, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { conectarEvolutionQR, checarStatusEvolution } from "@/lib/whatsapp.functions";
 
 export const Route = createFileRoute("/app/whatsapp")({ component: WhatsAppPage });
 
@@ -84,11 +86,50 @@ function WhatsAppPage() {
     await (supabase as any).from("conexoes_whatsapp").update({ ativo: true }).eq("id", id);
     toast.success("Conexão ativa definida"); await carregar(orgId);
   }
-  async function reconectar(id: string) {
-    await (supabase as any).from("conexoes_whatsapp").update({ status: "aguardando_qr" }).eq("id", id);
-    toast.info("Solicitação de reconexão registrada");
-    if (orgId) await carregar(orgId);
+  const conectarFn = useServerFn(conectarEvolutionQR);
+  const statusFn = useServerFn(checarStatusEvolution);
+  const [conectandoId, setConectandoId] = useState<string | null>(null);
+
+  async function conectarQR(c: any) {
+    if (c.provedor !== "evolution_qr") {
+      return toast.error("Geração de QR só está disponível para Evolution API — QR Code");
+    }
+    if (!c.url_servidor || !c.api_key_provedor || !c.instance_name) {
+      return toast.error("Configure URL, API Key e nome da instância antes de conectar");
+    }
+    try {
+      setConectandoId(c.id);
+      await conectarFn({ data: { conexaoId: c.id } });
+      toast.success("QR Code gerado. Escaneie com o WhatsApp.");
+      if (orgId) await carregar(orgId);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao gerar QR Code");
+    } finally {
+      setConectandoId(null);
+    }
   }
+
+  async function reconectar(c: any) {
+    await conectarQR(c);
+  }
+
+  // Polling de status enquanto há conexão aguardando QR
+  useEffect(() => {
+    const aguardando = conexoes.filter((c) => c.status === "aguardando_qr" && c.provedor === "evolution_qr");
+    if (aguardando.length === 0) return;
+    const interval = setInterval(async () => {
+      for (const c of aguardando) {
+        try {
+          const r: any = await statusFn({ data: { conexaoId: c.id } });
+          if (r?.status === "conectado") {
+            toast.success(`${c.nome} conectado!`);
+            if (orgId) await carregar(orgId);
+          }
+        } catch { /* ignore */ }
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [conexoes, orgId, statusFn]);
 
   const up = (p: any) => setForm((f) => ({ ...f, ...p }));
 
@@ -133,8 +174,14 @@ function WhatsAppPage() {
               <div className="flex flex-wrap gap-2 pt-2">
                 <Button variant="outline" size="sm" onClick={() => editar(c)}><Pencil className="h-3.5 w-3.5 mr-1" />Editar</Button>
                 <Button variant="outline" size="sm" onClick={() => definirAtiva(c.id)} disabled={c.ativo}><CheckCircle className="h-3.5 w-3.5 mr-1" />Definir como ativa</Button>
-                {(c.status === "desconectado" || c.status === "erro") && (
-                  <Button variant="outline" size="sm" onClick={() => reconectar(c.id)}><RefreshCw className="h-3.5 w-3.5 mr-1" />Reconectar</Button>
+                {c.provedor === "evolution_qr" && c.status !== "conectado" && (
+                  <Button size="sm" onClick={() => conectarQR(c)} disabled={conectandoId === c.id}>
+                    {conectandoId === c.id ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <QrCode className="h-3.5 w-3.5 mr-1" />}
+                    {c.qr_code_base64 ? "Gerar novo QR" : "Conectar / Gerar QR"}
+                  </Button>
+                )}
+                {(c.status === "desconectado" || c.status === "erro") && c.provedor !== "evolution_qr" && (
+                  <Button variant="outline" size="sm" onClick={() => reconectar(c)}><RefreshCw className="h-3.5 w-3.5 mr-1" />Reconectar</Button>
                 )}
                 <AlertDialog>
                   <AlertDialogTrigger asChild><Button variant="ghost" size="sm"><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></AlertDialogTrigger>
