@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-r
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Plug, Sparkles, Target, Trophy } from "lucide-react";
+import { Plug, Sparkles, Target, Trophy, Bot, FileText, BookOpen, HelpCircle, Sliders, Ticket } from "lucide-react";
 
 export const Route = createFileRoute("/app/configuracoes")({ component: ConfigLayout });
 
@@ -11,6 +11,12 @@ const subnav = [
   { to: "/app/configuracoes/ia", label: "IA", icon: Sparkles },
   { to: "/app/configuracoes/metas", label: "Metas", icon: Target },
   { to: "/app/configuracoes/ranking", label: "Ranking", icon: Trophy },
+  { to: "/app/configuracoes/chatbot", label: "Chatbot", icon: Bot },
+  { to: "/app/configuracoes/chatbot-prompt", label: "Prompt", icon: FileText },
+  { to: "/app/configuracoes/chatbot-conhecimento", label: "Conhecimento", icon: BookOpen },
+  { to: "/app/configuracoes/chatbot-faq", label: "FAQ", icon: HelpCircle },
+  { to: "/app/configuracoes/chatbot-regras", label: "Regras", icon: Sliders },
+  { to: "/app/configuracoes/chatbot-tickets", label: "Tickets", icon: Ticket },
 ];
 
 function ConfigLayout() {
