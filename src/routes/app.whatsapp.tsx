@@ -219,6 +219,19 @@ function WhatsAppPage() {
             <div className="space-y-1"><Label>Nome da conexão</Label><Input value={form.nome} onChange={(e) => up({ nome: e.target.value })} /></div>
             <div className="space-y-1"><Label>Número de telefone</Label><Input value={form.numero_telefone} onChange={(e) => up({ numero_telefone: e.target.value })} placeholder="5547999999999" /></div>
 
+            {form.provedor === "uazapi" && <>
+              <div className="rounded-md bg-muted/40 border p-3 text-xs space-y-1">
+                <p className="font-medium">Como obter o token UAZAPI (grátis):</p>
+                <ol className="list-decimal ml-4 space-y-0.5 text-muted-foreground">
+                  <li>Acesse <a href="https://uazapi.com" target="_blank" rel="noreferrer" className="underline">uazapi.com</a> e crie uma conta gratuita</li>
+                  <li>Crie uma nova instância no painel deles</li>
+                  <li>Copie o <strong>token da instância</strong> e cole abaixo</li>
+                </ol>
+              </div>
+              <div className="space-y-1"><Label>Token da instância UAZAPI</Label><Input value={form.api_key_provedor} onChange={(e) => up({ api_key_provedor: e.target.value })} placeholder="cole aqui o token" /></div>
+              <div className="space-y-1"><Label>URL do servidor (opcional)</Label><Input value={form.url_servidor} onChange={(e) => up({ url_servidor: e.target.value })} placeholder="https://free.uazapi.com (padrão)" /></div>
+              <div className="space-y-1"><Label>Nome da instância (opcional)</Label><Input value={form.instance_name} onChange={(e) => up({ instance_name: e.target.value })} /></div>
+            </>}
             {form.provedor === "evolution_qr" && <>
               <div className="space-y-1"><Label>URL do servidor Evolution API</Label><Input value={form.url_servidor} onChange={(e) => up({ url_servidor: e.target.value })} placeholder="https://meu-evolution.com" /></div>
               <div className="space-y-1"><Label>API Key global do servidor</Label><Input value={form.api_key_provedor} onChange={(e) => up({ api_key_provedor: e.target.value })} /></div>
