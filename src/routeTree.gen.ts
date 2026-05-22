@@ -25,6 +25,7 @@ import { Route as AppConfiguracoesRankingRouteImport } from './routes/app.config
 import { Route as AppConfiguracoesMetasRouteImport } from './routes/app.configuracoes.metas'
 import { Route as AppConfiguracoesIntegracaoRouteImport } from './routes/app.configuracoes.integracao'
 import { Route as AppConfiguracoesIaRouteImport } from './routes/app.configuracoes.ia'
+import { Route as AppConfiguracoesChatbotTicketsRouteImport } from './routes/app.configuracoes.chatbot-tickets'
 import { Route as AppConfiguracoesChatbotRegrasRouteImport } from './routes/app.configuracoes.chatbot-regras'
 import { Route as AppConfiguracoesChatbotPromptRouteImport } from './routes/app.configuracoes.chatbot-prompt'
 import { Route as AppConfiguracoesChatbotFaqRouteImport } from './routes/app.configuracoes.chatbot-faq'
@@ -113,6 +114,12 @@ const AppConfiguracoesIaRoute = AppConfiguracoesIaRouteImport.update({
   path: '/ia',
   getParentRoute: () => AppConfiguracoesRoute,
 } as any)
+const AppConfiguracoesChatbotTicketsRoute =
+  AppConfiguracoesChatbotTicketsRouteImport.update({
+    id: '/chatbot-tickets',
+    path: '/chatbot-tickets',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
 const AppConfiguracoesChatbotRegrasRoute =
   AppConfiguracoesChatbotRegrasRouteImport.update({
     id: '/chatbot-regras',
@@ -166,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes/chatbot-faq': typeof AppConfiguracoesChatbotFaqRoute
   '/app/configuracoes/chatbot-prompt': typeof AppConfiguracoesChatbotPromptRoute
   '/app/configuracoes/chatbot-regras': typeof AppConfiguracoesChatbotRegrasRoute
+  '/app/configuracoes/chatbot-tickets': typeof AppConfiguracoesChatbotTicketsRoute
   '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
   '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
   '/app/configuracoes/metas': typeof AppConfiguracoesMetasRoute
@@ -188,6 +196,7 @@ export interface FileRoutesByTo {
   '/app/configuracoes/chatbot-faq': typeof AppConfiguracoesChatbotFaqRoute
   '/app/configuracoes/chatbot-prompt': typeof AppConfiguracoesChatbotPromptRoute
   '/app/configuracoes/chatbot-regras': typeof AppConfiguracoesChatbotRegrasRoute
+  '/app/configuracoes/chatbot-tickets': typeof AppConfiguracoesChatbotTicketsRoute
   '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
   '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
   '/app/configuracoes/metas': typeof AppConfiguracoesMetasRoute
@@ -213,6 +222,7 @@ export interface FileRoutesById {
   '/app/configuracoes/chatbot-faq': typeof AppConfiguracoesChatbotFaqRoute
   '/app/configuracoes/chatbot-prompt': typeof AppConfiguracoesChatbotPromptRoute
   '/app/configuracoes/chatbot-regras': typeof AppConfiguracoesChatbotRegrasRoute
+  '/app/configuracoes/chatbot-tickets': typeof AppConfiguracoesChatbotTicketsRoute
   '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
   '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
   '/app/configuracoes/metas': typeof AppConfiguracoesMetasRoute
@@ -239,6 +249,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/chatbot-faq'
     | '/app/configuracoes/chatbot-prompt'
     | '/app/configuracoes/chatbot-regras'
+    | '/app/configuracoes/chatbot-tickets'
     | '/app/configuracoes/ia'
     | '/app/configuracoes/integracao'
     | '/app/configuracoes/metas'
@@ -261,6 +272,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/chatbot-faq'
     | '/app/configuracoes/chatbot-prompt'
     | '/app/configuracoes/chatbot-regras'
+    | '/app/configuracoes/chatbot-tickets'
     | '/app/configuracoes/ia'
     | '/app/configuracoes/integracao'
     | '/app/configuracoes/metas'
@@ -285,6 +297,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/chatbot-faq'
     | '/app/configuracoes/chatbot-prompt'
     | '/app/configuracoes/chatbot-regras'
+    | '/app/configuracoes/chatbot-tickets'
     | '/app/configuracoes/ia'
     | '/app/configuracoes/integracao'
     | '/app/configuracoes/metas'
@@ -412,6 +425,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesIaRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
+    '/app/configuracoes/chatbot-tickets': {
+      id: '/app/configuracoes/chatbot-tickets'
+      path: '/chatbot-tickets'
+      fullPath: '/app/configuracoes/chatbot-tickets'
+      preLoaderRoute: typeof AppConfiguracoesChatbotTicketsRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
     '/app/configuracoes/chatbot-regras': {
       id: '/app/configuracoes/chatbot-regras'
       path: '/chatbot-regras'
@@ -475,6 +495,7 @@ interface AppConfiguracoesRouteChildren {
   AppConfiguracoesChatbotFaqRoute: typeof AppConfiguracoesChatbotFaqRoute
   AppConfiguracoesChatbotPromptRoute: typeof AppConfiguracoesChatbotPromptRoute
   AppConfiguracoesChatbotRegrasRoute: typeof AppConfiguracoesChatbotRegrasRoute
+  AppConfiguracoesChatbotTicketsRoute: typeof AppConfiguracoesChatbotTicketsRoute
   AppConfiguracoesIaRoute: typeof AppConfiguracoesIaRoute
   AppConfiguracoesIntegracaoRoute: typeof AppConfiguracoesIntegracaoRoute
   AppConfiguracoesMetasRoute: typeof AppConfiguracoesMetasRoute
@@ -489,6 +510,7 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesChatbotFaqRoute: AppConfiguracoesChatbotFaqRoute,
   AppConfiguracoesChatbotPromptRoute: AppConfiguracoesChatbotPromptRoute,
   AppConfiguracoesChatbotRegrasRoute: AppConfiguracoesChatbotRegrasRoute,
+  AppConfiguracoesChatbotTicketsRoute: AppConfiguracoesChatbotTicketsRoute,
   AppConfiguracoesIaRoute: AppConfiguracoesIaRoute,
   AppConfiguracoesIntegracaoRoute: AppConfiguracoesIntegracaoRoute,
   AppConfiguracoesMetasRoute: AppConfiguracoesMetasRoute,
