@@ -142,3 +142,119 @@ export const checarStatusEvolution = createServerFn({ method: "POST" })
 
     return { state, status };
   });
+
+/* ============================================================
+ * UAZAPI — https://uazapi.com (tem plano free)
+ * Padrão: header `token: <SEU_TOKEN_DE_INSTÂNCIA>`
+ * Base default: https://free.uazapi.com (o usuário pode trocar)
+ * ============================================================ */
+
+async function uazFetch(base: string, path: string, token: string, init: RequestInit = {}) {
+  const res = await fetch(`${normalizeBase(base)}${path}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      token,
+      ...(init.headers ?? {}),
+    },
+  });
+  const text = await res.text();
+  let body: any = null;
+  try { body = text ? JSON.parse(text) : null; } catch { body = text; }
+  return { ok: res.ok, status: res.status, body };
+}
+
+export const conectarUazapiQR = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({ conexaoId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: cx } = await supabase
+      .from("conexoes_whatsapp" as any)
+      .select("*")
+      .eq("id", data.conexaoId)
+      .single();
+    const c: any = cx;
+    if (!c) throw new Error("Conexão não encontrada");
+    const token = c.api_key_provedor;
+    const base = c.url_servidor || "https://free.uazapi.com";
+    if (!token) throw new Error("Token UAZAPI não configurado");
+
+    // 1) Tenta /instance/init (gera QR para instâncias novas / desconectadas)
+    let r = await uazFetch(base, `/instance/init`, token, {
+      method: "POST",
+      body: JSON.stringify({ name: c.instance_name || undefined }),
+    });
+
+    // 2) Se já estiver inicializada, busca o status que traz o QR
+    if (!r.ok || (!r.body?.qrcode && !r.body?.instance?.qrcode)) {
+      r = await uazFetch(base, `/instance/status`, token);
+    }
+    if (!r.ok) {
+      throw new Error(`Falha UAZAPI (${r.status}): ${JSON.stringify(r.body)}`);
+    }
+
+    let qrcode: string | null =
+      r.body?.qrcode ??
+      r.body?.instance?.qrcode ??
+      r.body?.base64 ??
+      null;
+
+    if (qrcode && qrcode.startsWith("data:")) {
+      const idx = qrcode.indexOf(",");
+      if (idx >= 0) qrcode = qrcode.slice(idx + 1);
+    }
+    if (!qrcode) throw new Error("UAZAPI não retornou o QR Code. Verifique se o token está correto.");
+
+    await supabase
+      .from("conexoes_whatsapp" as any)
+      .update({
+        status: "aguardando_qr",
+        qr_code_base64: qrcode,
+        atualizado_em: new Date().toISOString(),
+      })
+      .eq("id", data.conexaoId);
+
+    return { qrcode };
+  });
+
+export const checarStatusUazapi = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({ conexaoId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: cx } = await supabase
+      .from("conexoes_whatsapp" as any)
+      .select("*")
+      .eq("id", data.conexaoId)
+      .single();
+    const c: any = cx;
+    if (!c) throw new Error("Conexão não encontrada");
+    const token = c.api_key_provedor;
+    const base = c.url_servidor || "https://free.uazapi.com";
+    if (!token) throw new Error("Token UAZAPI não configurado");
+
+    const r = await uazFetch(base, `/instance/status`, token);
+    const state: string =
+      r.body?.instance?.status ?? r.body?.status ?? r.body?.state ?? "unknown";
+
+    let status = c.status;
+    const s = String(state).toLowerCase();
+    if (s === "connected" || s === "open" || s === "online") status = "conectado";
+    else if (s === "connecting" || s === "qrcode" || s === "qr") status = "aguardando_qr";
+    else if (s === "disconnected" || s === "close" || s === "closed") status = "desconectado";
+
+    const patch: any = { status, atualizado_em: new Date().toISOString() };
+    if (status === "conectado") patch.qr_code_base64 = null;
+    if (c.numero_telefone == null && r.body?.instance?.number) {
+      patch.numero_telefone = String(r.body.instance.number);
+    }
+    await supabase.from("conexoes_whatsapp" as any).update(patch).eq("id", data.conexaoId);
+
+    return { state, status };
+  });
+
