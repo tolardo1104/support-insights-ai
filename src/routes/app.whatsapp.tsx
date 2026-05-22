@@ -13,12 +13,13 @@ import { Plus, Phone, Pencil, Trash2, CheckCircle, RefreshCw, MessageCircle, QrC
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { conectarEvolutionQR, checarStatusEvolution } from "@/lib/whatsapp.functions";
+import { conectarEvolutionQR, checarStatusEvolution, conectarUazapiQR, checarStatusUazapi } from "@/lib/whatsapp.functions";
 
 export const Route = createFileRoute("/app/whatsapp")({ component: WhatsAppPage });
 
 const PROVEDORES = [
-  { v: "evolution_qr", l: "Evolution API — QR Code" },
+  { v: "uazapi", l: "UAZAPI — QR Code (tem plano grátis) ⭐" },
+  { v: "evolution_qr", l: "Evolution API — QR Code (self-hosted)" },
   { v: "evolution_official", l: "Evolution API — Meta Oficial" },
   { v: "zapi", l: "Z-API" },
   { v: "meta_oficial", l: "Meta API Oficial" },
@@ -34,7 +35,7 @@ const STATUS_BADGE: Record<string, string> = {
 };
 
 function emptyForm() {
-  return { nome: "", provedor: "evolution_qr", numero_telefone: "", url_servidor: "", api_key_provedor: "", instance_name: "", webhook_url: "" };
+  return { nome: "", provedor: "uazapi", numero_telefone: "", url_servidor: "", api_key_provedor: "", instance_name: "", webhook_url: "" };
 }
 
 function WhatsAppPage() {
@@ -86,20 +87,28 @@ function WhatsAppPage() {
     await (supabase as any).from("conexoes_whatsapp").update({ ativo: true }).eq("id", id);
     toast.success("Conexão ativa definida"); await carregar(orgId);
   }
-  const conectarFn = useServerFn(conectarEvolutionQR);
-  const statusFn = useServerFn(checarStatusEvolution);
+  const conectarEvoFn = useServerFn(conectarEvolutionQR);
+  const statusEvoFn = useServerFn(checarStatusEvolution);
+  const conectarUazFn = useServerFn(conectarUazapiQR);
+  const statusUazFn = useServerFn(checarStatusUazapi);
   const [conectandoId, setConectandoId] = useState<string | null>(null);
 
+  function suportaQR(p: string) { return p === "evolution_qr" || p === "uazapi"; }
+
   async function conectarQR(c: any) {
-    if (c.provedor !== "evolution_qr") {
-      return toast.error("Geração de QR só está disponível para Evolution API — QR Code");
+    if (!suportaQR(c.provedor)) {
+      return toast.error("Geração de QR só está disponível para UAZAPI e Evolution API");
     }
-    if (!c.url_servidor || !c.api_key_provedor || !c.instance_name) {
+    if (c.provedor === "evolution_qr" && (!c.url_servidor || !c.api_key_provedor || !c.instance_name)) {
       return toast.error("Configure URL, API Key e nome da instância antes de conectar");
+    }
+    if (c.provedor === "uazapi" && !c.api_key_provedor) {
+      return toast.error("Cole o token UAZAPI da instância antes de conectar");
     }
     try {
       setConectandoId(c.id);
-      await conectarFn({ data: { conexaoId: c.id } });
+      const fn = c.provedor === "uazapi" ? conectarUazFn : conectarEvoFn;
+      await fn({ data: { conexaoId: c.id } });
       toast.success("QR Code gerado. Escaneie com o WhatsApp.");
       if (orgId) await carregar(orgId);
     } catch (e: any) {
@@ -115,12 +124,13 @@ function WhatsAppPage() {
 
   // Polling de status enquanto há conexão aguardando QR
   useEffect(() => {
-    const aguardando = conexoes.filter((c) => c.status === "aguardando_qr" && c.provedor === "evolution_qr");
+    const aguardando = conexoes.filter((c) => c.status === "aguardando_qr" && suportaQR(c.provedor));
     if (aguardando.length === 0) return;
     const interval = setInterval(async () => {
       for (const c of aguardando) {
         try {
-          const r: any = await statusFn({ data: { conexaoId: c.id } });
+          const fn = c.provedor === "uazapi" ? statusUazFn : statusEvoFn;
+          const r: any = await fn({ data: { conexaoId: c.id } });
           if (r?.status === "conectado") {
             toast.success(`${c.nome} conectado!`);
             if (orgId) await carregar(orgId);
@@ -129,7 +139,7 @@ function WhatsAppPage() {
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [conexoes, orgId, statusFn]);
+  }, [conexoes, orgId, statusEvoFn, statusUazFn]);
 
   const up = (p: any) => setForm((f) => ({ ...f, ...p }));
 
@@ -174,13 +184,13 @@ function WhatsAppPage() {
               <div className="flex flex-wrap gap-2 pt-2">
                 <Button variant="outline" size="sm" onClick={() => editar(c)}><Pencil className="h-3.5 w-3.5 mr-1" />Editar</Button>
                 <Button variant="outline" size="sm" onClick={() => definirAtiva(c.id)} disabled={c.ativo}><CheckCircle className="h-3.5 w-3.5 mr-1" />Definir como ativa</Button>
-                {c.provedor === "evolution_qr" && c.status !== "conectado" && (
+                {suportaQR(c.provedor) && c.status !== "conectado" && (
                   <Button size="sm" onClick={() => conectarQR(c)} disabled={conectandoId === c.id}>
                     {conectandoId === c.id ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <QrCode className="h-3.5 w-3.5 mr-1" />}
                     {c.qr_code_base64 ? "Gerar novo QR" : "Conectar / Gerar QR"}
                   </Button>
                 )}
-                {(c.status === "desconectado" || c.status === "erro") && c.provedor !== "evolution_qr" && (
+                {(c.status === "desconectado" || c.status === "erro") && !suportaQR(c.provedor) && (
                   <Button variant="outline" size="sm" onClick={() => reconectar(c)}><RefreshCw className="h-3.5 w-3.5 mr-1" />Reconectar</Button>
                 )}
                 <AlertDialog>
@@ -209,6 +219,19 @@ function WhatsAppPage() {
             <div className="space-y-1"><Label>Nome da conexão</Label><Input value={form.nome} onChange={(e) => up({ nome: e.target.value })} /></div>
             <div className="space-y-1"><Label>Número de telefone</Label><Input value={form.numero_telefone} onChange={(e) => up({ numero_telefone: e.target.value })} placeholder="5547999999999" /></div>
 
+            {form.provedor === "uazapi" && <>
+              <div className="rounded-md bg-muted/40 border p-3 text-xs space-y-1">
+                <p className="font-medium">Como obter o token UAZAPI (grátis):</p>
+                <ol className="list-decimal ml-4 space-y-0.5 text-muted-foreground">
+                  <li>Acesse <a href="https://uazapi.com" target="_blank" rel="noreferrer" className="underline">uazapi.com</a> e crie uma conta gratuita</li>
+                  <li>Crie uma nova instância no painel deles</li>
+                  <li>Copie o <strong>token da instância</strong> e cole abaixo</li>
+                </ol>
+              </div>
+              <div className="space-y-1"><Label>Token da instância UAZAPI</Label><Input value={form.api_key_provedor} onChange={(e) => up({ api_key_provedor: e.target.value })} placeholder="cole aqui o token" /></div>
+              <div className="space-y-1"><Label>URL do servidor (opcional)</Label><Input value={form.url_servidor} onChange={(e) => up({ url_servidor: e.target.value })} placeholder="https://free.uazapi.com (padrão)" /></div>
+              <div className="space-y-1"><Label>Nome da instância (opcional)</Label><Input value={form.instance_name} onChange={(e) => up({ instance_name: e.target.value })} /></div>
+            </>}
             {form.provedor === "evolution_qr" && <>
               <div className="space-y-1"><Label>URL do servidor Evolution API</Label><Input value={form.url_servidor} onChange={(e) => up({ url_servidor: e.target.value })} placeholder="https://meu-evolution.com" /></div>
               <div className="space-y-1"><Label>API Key global do servidor</Label><Input value={form.api_key_provedor} onChange={(e) => up({ api_key_provedor: e.target.value })} /></div>
