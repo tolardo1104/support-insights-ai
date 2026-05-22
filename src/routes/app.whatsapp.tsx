@@ -13,7 +13,7 @@ import { Plus, Phone, Pencil, Trash2, CheckCircle, RefreshCw, MessageCircle, QrC
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { conectarEvolutionQR, checarStatusEvolution } from "@/lib/whatsapp.functions";
+import { conectarEvolutionQR, checarStatusEvolution, conectarUazapiQR, checarStatusUazapi } from "@/lib/whatsapp.functions";
 
 export const Route = createFileRoute("/app/whatsapp")({ component: WhatsAppPage });
 
