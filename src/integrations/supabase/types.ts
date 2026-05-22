@@ -109,6 +109,372 @@ export type Database = {
           },
         ]
       }
+      chatbot_conhecimento: {
+        Row: {
+          ativo: boolean | null
+          conteudo: string | null
+          criado_em: string
+          id: string
+          nome: string
+          organizacao_id: string
+          storage_path: string | null
+          tipo: string
+          url_fonte: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          conteudo?: string | null
+          criado_em?: string
+          id?: string
+          nome: string
+          organizacao_id: string
+          storage_path?: string | null
+          tipo: string
+          url_fonte?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          conteudo?: string | null
+          criado_em?: string
+          id?: string
+          nome?: string
+          organizacao_id?: string
+          storage_path?: string | null
+          tipo?: string
+          url_fonte?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatbot_conhecimento_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chatbot_conversas: {
+        Row: {
+          canal: string
+          categoria_identificada: string | null
+          conexao_id: string | null
+          cpf_cnpj: string | null
+          criado_em: string
+          curadoria_nota: string | null
+          curadoria_status: string | null
+          email_cliente: string | null
+          encerrado_em: string | null
+          id: string
+          nome_cliente: string | null
+          numero_telefone: string | null
+          organizacao_id: string
+          pessoa_movidesk_id: string | null
+          resolvido_por: string | null
+          resumo_ia: string | null
+          status: string | null
+          tags_identificadas: string[] | null
+          tentativas_ia: number | null
+          ticket_movidesk_id: string | null
+          ticket_movidesk_numero: number | null
+          urgencia_identificada: string | null
+        }
+        Insert: {
+          canal?: string
+          categoria_identificada?: string | null
+          conexao_id?: string | null
+          cpf_cnpj?: string | null
+          criado_em?: string
+          curadoria_nota?: string | null
+          curadoria_status?: string | null
+          email_cliente?: string | null
+          encerrado_em?: string | null
+          id?: string
+          nome_cliente?: string | null
+          numero_telefone?: string | null
+          organizacao_id: string
+          pessoa_movidesk_id?: string | null
+          resolvido_por?: string | null
+          resumo_ia?: string | null
+          status?: string | null
+          tags_identificadas?: string[] | null
+          tentativas_ia?: number | null
+          ticket_movidesk_id?: string | null
+          ticket_movidesk_numero?: number | null
+          urgencia_identificada?: string | null
+        }
+        Update: {
+          canal?: string
+          categoria_identificada?: string | null
+          conexao_id?: string | null
+          cpf_cnpj?: string | null
+          criado_em?: string
+          curadoria_nota?: string | null
+          curadoria_status?: string | null
+          email_cliente?: string | null
+          encerrado_em?: string | null
+          id?: string
+          nome_cliente?: string | null
+          numero_telefone?: string | null
+          organizacao_id?: string
+          pessoa_movidesk_id?: string | null
+          resolvido_por?: string | null
+          resumo_ia?: string | null
+          status?: string | null
+          tags_identificadas?: string[] | null
+          tentativas_ia?: number | null
+          ticket_movidesk_id?: string | null
+          ticket_movidesk_numero?: number | null
+          urgencia_identificada?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatbot_conversas_conexao_id_fkey"
+            columns: ["conexao_id"]
+            isOneToOne: false
+            referencedRelation: "conexoes_whatsapp"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chatbot_conversas_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chatbot_faq: {
+        Row: {
+          ativo: boolean | null
+          criado_em: string
+          id: string
+          ordem: number | null
+          organizacao_id: string
+          pergunta: string
+          resposta: string
+          tags: string[] | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          criado_em?: string
+          id?: string
+          ordem?: number | null
+          organizacao_id: string
+          pergunta: string
+          resposta: string
+          tags?: string[] | null
+        }
+        Update: {
+          ativo?: boolean | null
+          criado_em?: string
+          id?: string
+          ordem?: number | null
+          organizacao_id?: string
+          pergunta?: string
+          resposta?: string
+          tags?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatbot_faq_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chatbot_mapeamento_tickets: {
+        Row: {
+          atualizado_em: string
+          categoria_padrao: string | null
+          criado_em: string
+          id: string
+          organizacao_id: string
+          prompt_descricao: string | null
+          prompt_titulo: string | null
+          responsavel_bot: string | null
+          servico_padrao: string | null
+          status_resolvido: string | null
+          status_transbordo: string | null
+          tags_bot: string[] | null
+          ticket_status_ia_resolve: string | null
+          urgencia_padrao: string | null
+        }
+        Insert: {
+          atualizado_em?: string
+          categoria_padrao?: string | null
+          criado_em?: string
+          id?: string
+          organizacao_id: string
+          prompt_descricao?: string | null
+          prompt_titulo?: string | null
+          responsavel_bot?: string | null
+          servico_padrao?: string | null
+          status_resolvido?: string | null
+          status_transbordo?: string | null
+          tags_bot?: string[] | null
+          ticket_status_ia_resolve?: string | null
+          urgencia_padrao?: string | null
+        }
+        Update: {
+          atualizado_em?: string
+          categoria_padrao?: string | null
+          criado_em?: string
+          id?: string
+          organizacao_id?: string
+          prompt_descricao?: string | null
+          prompt_titulo?: string | null
+          responsavel_bot?: string | null
+          servico_padrao?: string | null
+          status_resolvido?: string | null
+          status_transbordo?: string | null
+          tags_bot?: string[] | null
+          ticket_status_ia_resolve?: string | null
+          urgencia_padrao?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatbot_mapeamento_tickets_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: true
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chatbot_mensagens: {
+        Row: {
+          conteudo: string
+          conversa_id: string
+          criado_em: string
+          id: string
+          metadata: Json | null
+          remetente: string
+        }
+        Insert: {
+          conteudo: string
+          conversa_id: string
+          criado_em?: string
+          id?: string
+          metadata?: Json | null
+          remetente: string
+        }
+        Update: {
+          conteudo?: string
+          conversa_id?: string
+          criado_em?: string
+          id?: string
+          metadata?: Json | null
+          remetente?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatbot_mensagens_conversa_id_fkey"
+            columns: ["conversa_id"]
+            isOneToOne: false
+            referencedRelation: "chatbot_conversas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chatbot_regras: {
+        Row: {
+          ativo: boolean | null
+          criado_em: string
+          id: string
+          organizacao_id: string
+          palavras_chave: string[]
+          tipo: string
+          valor: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          criado_em?: string
+          id?: string
+          organizacao_id: string
+          palavras_chave: string[]
+          tipo: string
+          valor: string
+        }
+        Update: {
+          ativo?: boolean | null
+          criado_em?: string
+          id?: string
+          organizacao_id?: string
+          palavras_chave?: string[]
+          tipo?: string
+          valor?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatbot_regras_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conexoes_whatsapp: {
+        Row: {
+          api_key_provedor: string | null
+          ativo: boolean | null
+          atualizado_em: string
+          criado_em: string
+          id: string
+          instance_name: string | null
+          nome: string
+          numero_telefone: string | null
+          organizacao_id: string
+          provedor: string
+          qr_code_base64: string | null
+          status: string | null
+          url_servidor: string | null
+          webhook_url: string | null
+        }
+        Insert: {
+          api_key_provedor?: string | null
+          ativo?: boolean | null
+          atualizado_em?: string
+          criado_em?: string
+          id?: string
+          instance_name?: string | null
+          nome: string
+          numero_telefone?: string | null
+          organizacao_id: string
+          provedor: string
+          qr_code_base64?: string | null
+          status?: string | null
+          url_servidor?: string | null
+          webhook_url?: string | null
+        }
+        Update: {
+          api_key_provedor?: string | null
+          ativo?: boolean | null
+          atualizado_em?: string
+          criado_em?: string
+          id?: string
+          instance_name?: string | null
+          nome?: string
+          numero_telefone?: string | null
+          organizacao_id?: string
+          provedor?: string
+          qr_code_base64?: string | null
+          status?: string | null
+          url_servidor?: string | null
+          webhook_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conexoes_whatsapp_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       configuracoes: {
         Row: {
           atualizado_em: string
@@ -173,6 +539,83 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "configuracoes_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: true
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      configuracoes_chatbot: {
+        Row: {
+          acao_fora_horario: string | null
+          ativo: boolean | null
+          atualizado_em: string
+          criado_em: string
+          dias_semana: string[] | null
+          fontes_conhecimento: string[] | null
+          horario_fim: string | null
+          horario_inicio: string | null
+          id: string
+          max_tentativas: number | null
+          mensagem_boas_vindas: string | null
+          mensagem_cliente_nao_encontrado: string | null
+          mensagem_fora_horario: string | null
+          mensagem_transbordo: string | null
+          nome_assistente: string | null
+          organizacao_id: string
+          palavras_urgencia: string[] | null
+          prompt_sistema: string | null
+          transbordo_palavra_chave: boolean | null
+          url_conhecimento: string | null
+        }
+        Insert: {
+          acao_fora_horario?: string | null
+          ativo?: boolean | null
+          atualizado_em?: string
+          criado_em?: string
+          dias_semana?: string[] | null
+          fontes_conhecimento?: string[] | null
+          horario_fim?: string | null
+          horario_inicio?: string | null
+          id?: string
+          max_tentativas?: number | null
+          mensagem_boas_vindas?: string | null
+          mensagem_cliente_nao_encontrado?: string | null
+          mensagem_fora_horario?: string | null
+          mensagem_transbordo?: string | null
+          nome_assistente?: string | null
+          organizacao_id: string
+          palavras_urgencia?: string[] | null
+          prompt_sistema?: string | null
+          transbordo_palavra_chave?: boolean | null
+          url_conhecimento?: string | null
+        }
+        Update: {
+          acao_fora_horario?: string | null
+          ativo?: boolean | null
+          atualizado_em?: string
+          criado_em?: string
+          dias_semana?: string[] | null
+          fontes_conhecimento?: string[] | null
+          horario_fim?: string | null
+          horario_inicio?: string | null
+          id?: string
+          max_tentativas?: number | null
+          mensagem_boas_vindas?: string | null
+          mensagem_cliente_nao_encontrado?: string | null
+          mensagem_fora_horario?: string | null
+          mensagem_transbordo?: string | null
+          nome_assistente?: string | null
+          organizacao_id?: string
+          palavras_urgencia?: string[] | null
+          prompt_sistema?: string | null
+          transbordo_palavra_chave?: boolean | null
+          url_conhecimento?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "configuracoes_chatbot_organizacao_id_fkey"
             columns: ["organizacao_id"]
             isOneToOne: true
             referencedRelation: "organizacoes"
