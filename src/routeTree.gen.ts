@@ -17,6 +17,7 @@ import { Route as AppWhatsappRouteImport } from './routes/app.whatsapp'
 import { Route as AppRankingRouteImport } from './routes/app.ranking'
 import { Route as AppMetasRouteImport } from './routes/app.metas'
 import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
+import { Route as AppConversasRouteImport } from './routes/app.conversas'
 import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
 import { Route as AppClientesRouteImport } from './routes/app.clientes'
 import { Route as AppAtendentesRouteImport } from './routes/app.atendentes'
@@ -72,6 +73,11 @@ const AppMetasRoute = AppMetasRouteImport.update({
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppConversasRoute = AppConversasRouteImport.update({
+  id: '/conversas',
+  path: '/conversas',
   getParentRoute: () => AppRoute,
 } as any)
 const AppConfiguracoesRoute = AppConfiguracoesRouteImport.update({
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/app/atendentes': typeof AppAtendentesRouteWithChildren
   '/app/clientes': typeof AppClientesRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
+  '/app/conversas': typeof AppConversasRoute
   '/app/dashboard': typeof AppDashboardRoute
   '/app/metas': typeof AppMetasRoute
   '/app/ranking': typeof AppRankingRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/app/analise-ia': typeof AppAnaliseIaRoute
   '/app/atendentes': typeof AppAtendentesRouteWithChildren
   '/app/clientes': typeof AppClientesRoute
+  '/app/conversas': typeof AppConversasRoute
   '/app/dashboard': typeof AppDashboardRoute
   '/app/metas': typeof AppMetasRoute
   '/app/ranking': typeof AppRankingRoute
@@ -220,6 +228,7 @@ export interface FileRoutesById {
   '/app/atendentes': typeof AppAtendentesRouteWithChildren
   '/app/clientes': typeof AppClientesRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
+  '/app/conversas': typeof AppConversasRoute
   '/app/dashboard': typeof AppDashboardRoute
   '/app/metas': typeof AppMetasRoute
   '/app/ranking': typeof AppRankingRoute
@@ -248,6 +257,7 @@ export interface FileRouteTypes {
     | '/app/atendentes'
     | '/app/clientes'
     | '/app/configuracoes'
+    | '/app/conversas'
     | '/app/dashboard'
     | '/app/metas'
     | '/app/ranking'
@@ -272,6 +282,7 @@ export interface FileRouteTypes {
     | '/app/analise-ia'
     | '/app/atendentes'
     | '/app/clientes'
+    | '/app/conversas'
     | '/app/dashboard'
     | '/app/metas'
     | '/app/ranking'
@@ -298,6 +309,7 @@ export interface FileRouteTypes {
     | '/app/atendentes'
     | '/app/clientes'
     | '/app/configuracoes'
+    | '/app/conversas'
     | '/app/dashboard'
     | '/app/metas'
     | '/app/ranking'
@@ -379,6 +391,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/app/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/conversas': {
+      id: '/app/conversas'
+      path: '/conversas'
+      fullPath: '/app/conversas'
+      preLoaderRoute: typeof AppConversasRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/configuracoes': {
@@ -545,6 +564,7 @@ interface AppRouteChildren {
   AppAtendentesRoute: typeof AppAtendentesRouteWithChildren
   AppClientesRoute: typeof AppClientesRoute
   AppConfiguracoesRoute: typeof AppConfiguracoesRouteWithChildren
+  AppConversasRoute: typeof AppConversasRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppMetasRoute: typeof AppMetasRoute
   AppRankingRoute: typeof AppRankingRoute
@@ -557,6 +577,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAtendentesRoute: AppAtendentesRouteWithChildren,
   AppClientesRoute: AppClientesRoute,
   AppConfiguracoesRoute: AppConfiguracoesRouteWithChildren,
+  AppConversasRoute: AppConversasRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppMetasRoute: AppMetasRoute,
   AppRankingRoute: AppRankingRoute,
