@@ -9,9 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Phone, Pencil, Trash2, CheckCircle, RefreshCw, MessageCircle } from "lucide-react";
+import { Plus, Phone, Pencil, Trash2, CheckCircle, RefreshCw, MessageCircle, QrCode, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { conectarEvolutionQR, checarStatusEvolution } from "@/lib/whatsapp.functions";
 
 export const Route = createFileRoute("/app/whatsapp")({ component: WhatsAppPage });
 
