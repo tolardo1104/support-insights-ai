@@ -25,6 +25,8 @@ import { Route as AppConfiguracoesRankingRouteImport } from './routes/app.config
 import { Route as AppConfiguracoesMetasRouteImport } from './routes/app.configuracoes.metas'
 import { Route as AppConfiguracoesIntegracaoRouteImport } from './routes/app.configuracoes.integracao'
 import { Route as AppConfiguracoesIaRouteImport } from './routes/app.configuracoes.ia'
+import { Route as AppConfiguracoesChatbotPromptRouteImport } from './routes/app.configuracoes.chatbot-prompt'
+import { Route as AppConfiguracoesChatbotRouteImport } from './routes/app.configuracoes.chatbot'
 import { Route as AppAtendentesIdRouteImport } from './routes/app.atendentes.$id'
 
 const LoginRoute = LoginRouteImport.update({
@@ -108,6 +110,17 @@ const AppConfiguracoesIaRoute = AppConfiguracoesIaRouteImport.update({
   path: '/ia',
   getParentRoute: () => AppConfiguracoesRoute,
 } as any)
+const AppConfiguracoesChatbotPromptRoute =
+  AppConfiguracoesChatbotPromptRouteImport.update({
+    id: '/chatbot-prompt',
+    path: '/chatbot-prompt',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
+const AppConfiguracoesChatbotRoute = AppConfiguracoesChatbotRouteImport.update({
+  id: '/chatbot',
+  path: '/chatbot',
+  getParentRoute: () => AppConfiguracoesRoute,
+} as any)
 const AppAtendentesIdRoute = AppAtendentesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -127,6 +140,8 @@ export interface FileRoutesByFullPath {
   '/app/ranking': typeof AppRankingRoute
   '/app/': typeof AppIndexRoute
   '/app/atendentes/$id': typeof AppAtendentesIdRoute
+  '/app/configuracoes/chatbot': typeof AppConfiguracoesChatbotRoute
+  '/app/configuracoes/chatbot-prompt': typeof AppConfiguracoesChatbotPromptRoute
   '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
   '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
   '/app/configuracoes/metas': typeof AppConfiguracoesMetasRoute
@@ -144,6 +159,8 @@ export interface FileRoutesByTo {
   '/app/ranking': typeof AppRankingRoute
   '/app': typeof AppIndexRoute
   '/app/atendentes/$id': typeof AppAtendentesIdRoute
+  '/app/configuracoes/chatbot': typeof AppConfiguracoesChatbotRoute
+  '/app/configuracoes/chatbot-prompt': typeof AppConfiguracoesChatbotPromptRoute
   '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
   '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
   '/app/configuracoes/metas': typeof AppConfiguracoesMetasRoute
@@ -164,6 +181,8 @@ export interface FileRoutesById {
   '/app/ranking': typeof AppRankingRoute
   '/app/': typeof AppIndexRoute
   '/app/atendentes/$id': typeof AppAtendentesIdRoute
+  '/app/configuracoes/chatbot': typeof AppConfiguracoesChatbotRoute
+  '/app/configuracoes/chatbot-prompt': typeof AppConfiguracoesChatbotPromptRoute
   '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
   '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
   '/app/configuracoes/metas': typeof AppConfiguracoesMetasRoute
@@ -185,6 +204,8 @@ export interface FileRouteTypes {
     | '/app/ranking'
     | '/app/'
     | '/app/atendentes/$id'
+    | '/app/configuracoes/chatbot'
+    | '/app/configuracoes/chatbot-prompt'
     | '/app/configuracoes/ia'
     | '/app/configuracoes/integracao'
     | '/app/configuracoes/metas'
@@ -202,6 +223,8 @@ export interface FileRouteTypes {
     | '/app/ranking'
     | '/app'
     | '/app/atendentes/$id'
+    | '/app/configuracoes/chatbot'
+    | '/app/configuracoes/chatbot-prompt'
     | '/app/configuracoes/ia'
     | '/app/configuracoes/integracao'
     | '/app/configuracoes/metas'
@@ -221,6 +244,8 @@ export interface FileRouteTypes {
     | '/app/ranking'
     | '/app/'
     | '/app/atendentes/$id'
+    | '/app/configuracoes/chatbot'
+    | '/app/configuracoes/chatbot-prompt'
     | '/app/configuracoes/ia'
     | '/app/configuracoes/integracao'
     | '/app/configuracoes/metas'
@@ -348,6 +373,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesIaRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
+    '/app/configuracoes/chatbot-prompt': {
+      id: '/app/configuracoes/chatbot-prompt'
+      path: '/chatbot-prompt'
+      fullPath: '/app/configuracoes/chatbot-prompt'
+      preLoaderRoute: typeof AppConfiguracoesChatbotPromptRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
+    '/app/configuracoes/chatbot': {
+      id: '/app/configuracoes/chatbot'
+      path: '/chatbot'
+      fullPath: '/app/configuracoes/chatbot'
+      preLoaderRoute: typeof AppConfiguracoesChatbotRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
     '/app/atendentes/$id': {
       id: '/app/atendentes/$id'
       path: '/$id'
@@ -371,6 +410,8 @@ const AppAtendentesRouteWithChildren = AppAtendentesRoute._addFileChildren(
 )
 
 interface AppConfiguracoesRouteChildren {
+  AppConfiguracoesChatbotRoute: typeof AppConfiguracoesChatbotRoute
+  AppConfiguracoesChatbotPromptRoute: typeof AppConfiguracoesChatbotPromptRoute
   AppConfiguracoesIaRoute: typeof AppConfiguracoesIaRoute
   AppConfiguracoesIntegracaoRoute: typeof AppConfiguracoesIntegracaoRoute
   AppConfiguracoesMetasRoute: typeof AppConfiguracoesMetasRoute
@@ -379,6 +420,8 @@ interface AppConfiguracoesRouteChildren {
 }
 
 const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
+  AppConfiguracoesChatbotRoute: AppConfiguracoesChatbotRoute,
+  AppConfiguracoesChatbotPromptRoute: AppConfiguracoesChatbotPromptRoute,
   AppConfiguracoesIaRoute: AppConfiguracoesIaRoute,
   AppConfiguracoesIntegracaoRoute: AppConfiguracoesIntegracaoRoute,
   AppConfiguracoesMetasRoute: AppConfiguracoesMetasRoute,
@@ -421,3 +464,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
