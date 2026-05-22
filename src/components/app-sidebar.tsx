@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Users, Building2, Sparkles, Target, Trophy, Settings, LogOut, Moon, Sun,
+  MessageCircle, MessagesSquare, ClipboardCheck,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/hooks/use-theme";
@@ -15,6 +16,9 @@ const items = [
   { to: "/app/metas", label: "Metas", icon: Target },
   { to: "/app/ranking", label: "Ranking", icon: Trophy },
   { to: "/app/configuracoes", label: "Configurações", icon: Settings },
+  { to: "/app/whatsapp", label: "WhatsApp", icon: MessageCircle },
+  { to: "/app/conversas", label: "Conversas", icon: MessagesSquare },
+  { to: "/app/curadoria", label: "Curadoria", icon: ClipboardCheck },
 ];
 
 export function AppSidebar() {
