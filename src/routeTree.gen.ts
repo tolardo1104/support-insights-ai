@@ -25,6 +25,7 @@ import { Route as AppConfiguracoesRankingRouteImport } from './routes/app.config
 import { Route as AppConfiguracoesMetasRouteImport } from './routes/app.configuracoes.metas'
 import { Route as AppConfiguracoesIntegracaoRouteImport } from './routes/app.configuracoes.integracao'
 import { Route as AppConfiguracoesIaRouteImport } from './routes/app.configuracoes.ia'
+import { Route as AppConfiguracoesChatbotRegrasRouteImport } from './routes/app.configuracoes.chatbot-regras'
 import { Route as AppConfiguracoesChatbotPromptRouteImport } from './routes/app.configuracoes.chatbot-prompt'
 import { Route as AppConfiguracoesChatbotFaqRouteImport } from './routes/app.configuracoes.chatbot-faq'
 import { Route as AppConfiguracoesChatbotConhecimentoRouteImport } from './routes/app.configuracoes.chatbot-conhecimento'
@@ -112,6 +113,12 @@ const AppConfiguracoesIaRoute = AppConfiguracoesIaRouteImport.update({
   path: '/ia',
   getParentRoute: () => AppConfiguracoesRoute,
 } as any)
+const AppConfiguracoesChatbotRegrasRoute =
+  AppConfiguracoesChatbotRegrasRouteImport.update({
+    id: '/chatbot-regras',
+    path: '/chatbot-regras',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
 const AppConfiguracoesChatbotPromptRoute =
   AppConfiguracoesChatbotPromptRouteImport.update({
     id: '/chatbot-prompt',
@@ -158,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes/chatbot-conhecimento': typeof AppConfiguracoesChatbotConhecimentoRoute
   '/app/configuracoes/chatbot-faq': typeof AppConfiguracoesChatbotFaqRoute
   '/app/configuracoes/chatbot-prompt': typeof AppConfiguracoesChatbotPromptRoute
+  '/app/configuracoes/chatbot-regras': typeof AppConfiguracoesChatbotRegrasRoute
   '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
   '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
   '/app/configuracoes/metas': typeof AppConfiguracoesMetasRoute
@@ -179,6 +187,7 @@ export interface FileRoutesByTo {
   '/app/configuracoes/chatbot-conhecimento': typeof AppConfiguracoesChatbotConhecimentoRoute
   '/app/configuracoes/chatbot-faq': typeof AppConfiguracoesChatbotFaqRoute
   '/app/configuracoes/chatbot-prompt': typeof AppConfiguracoesChatbotPromptRoute
+  '/app/configuracoes/chatbot-regras': typeof AppConfiguracoesChatbotRegrasRoute
   '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
   '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
   '/app/configuracoes/metas': typeof AppConfiguracoesMetasRoute
@@ -203,6 +212,7 @@ export interface FileRoutesById {
   '/app/configuracoes/chatbot-conhecimento': typeof AppConfiguracoesChatbotConhecimentoRoute
   '/app/configuracoes/chatbot-faq': typeof AppConfiguracoesChatbotFaqRoute
   '/app/configuracoes/chatbot-prompt': typeof AppConfiguracoesChatbotPromptRoute
+  '/app/configuracoes/chatbot-regras': typeof AppConfiguracoesChatbotRegrasRoute
   '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
   '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
   '/app/configuracoes/metas': typeof AppConfiguracoesMetasRoute
@@ -228,6 +238,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/chatbot-conhecimento'
     | '/app/configuracoes/chatbot-faq'
     | '/app/configuracoes/chatbot-prompt'
+    | '/app/configuracoes/chatbot-regras'
     | '/app/configuracoes/ia'
     | '/app/configuracoes/integracao'
     | '/app/configuracoes/metas'
@@ -249,6 +260,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/chatbot-conhecimento'
     | '/app/configuracoes/chatbot-faq'
     | '/app/configuracoes/chatbot-prompt'
+    | '/app/configuracoes/chatbot-regras'
     | '/app/configuracoes/ia'
     | '/app/configuracoes/integracao'
     | '/app/configuracoes/metas'
@@ -272,6 +284,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/chatbot-conhecimento'
     | '/app/configuracoes/chatbot-faq'
     | '/app/configuracoes/chatbot-prompt'
+    | '/app/configuracoes/chatbot-regras'
     | '/app/configuracoes/ia'
     | '/app/configuracoes/integracao'
     | '/app/configuracoes/metas'
@@ -399,6 +412,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesIaRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
+    '/app/configuracoes/chatbot-regras': {
+      id: '/app/configuracoes/chatbot-regras'
+      path: '/chatbot-regras'
+      fullPath: '/app/configuracoes/chatbot-regras'
+      preLoaderRoute: typeof AppConfiguracoesChatbotRegrasRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
     '/app/configuracoes/chatbot-prompt': {
       id: '/app/configuracoes/chatbot-prompt'
       path: '/chatbot-prompt'
@@ -454,6 +474,7 @@ interface AppConfiguracoesRouteChildren {
   AppConfiguracoesChatbotConhecimentoRoute: typeof AppConfiguracoesChatbotConhecimentoRoute
   AppConfiguracoesChatbotFaqRoute: typeof AppConfiguracoesChatbotFaqRoute
   AppConfiguracoesChatbotPromptRoute: typeof AppConfiguracoesChatbotPromptRoute
+  AppConfiguracoesChatbotRegrasRoute: typeof AppConfiguracoesChatbotRegrasRoute
   AppConfiguracoesIaRoute: typeof AppConfiguracoesIaRoute
   AppConfiguracoesIntegracaoRoute: typeof AppConfiguracoesIntegracaoRoute
   AppConfiguracoesMetasRoute: typeof AppConfiguracoesMetasRoute
@@ -467,6 +488,7 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
     AppConfiguracoesChatbotConhecimentoRoute,
   AppConfiguracoesChatbotFaqRoute: AppConfiguracoesChatbotFaqRoute,
   AppConfiguracoesChatbotPromptRoute: AppConfiguracoesChatbotPromptRoute,
+  AppConfiguracoesChatbotRegrasRoute: AppConfiguracoesChatbotRegrasRoute,
   AppConfiguracoesIaRoute: AppConfiguracoesIaRoute,
   AppConfiguracoesIntegracaoRoute: AppConfiguracoesIntegracaoRoute,
   AppConfiguracoesMetasRoute: AppConfiguracoesMetasRoute,
