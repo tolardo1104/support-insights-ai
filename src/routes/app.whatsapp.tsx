@@ -87,20 +87,28 @@ function WhatsAppPage() {
     await (supabase as any).from("conexoes_whatsapp").update({ ativo: true }).eq("id", id);
     toast.success("Conexão ativa definida"); await carregar(orgId);
   }
-  const conectarFn = useServerFn(conectarEvolutionQR);
-  const statusFn = useServerFn(checarStatusEvolution);
+  const conectarEvoFn = useServerFn(conectarEvolutionQR);
+  const statusEvoFn = useServerFn(checarStatusEvolution);
+  const conectarUazFn = useServerFn(conectarUazapiQR);
+  const statusUazFn = useServerFn(checarStatusUazapi);
   const [conectandoId, setConectandoId] = useState<string | null>(null);
 
+  function suportaQR(p: string) { return p === "evolution_qr" || p === "uazapi"; }
+
   async function conectarQR(c: any) {
-    if (c.provedor !== "evolution_qr") {
-      return toast.error("Geração de QR só está disponível para Evolution API — QR Code");
+    if (!suportaQR(c.provedor)) {
+      return toast.error("Geração de QR só está disponível para UAZAPI e Evolution API");
     }
-    if (!c.url_servidor || !c.api_key_provedor || !c.instance_name) {
+    if (c.provedor === "evolution_qr" && (!c.url_servidor || !c.api_key_provedor || !c.instance_name)) {
       return toast.error("Configure URL, API Key e nome da instância antes de conectar");
+    }
+    if (c.provedor === "uazapi" && !c.api_key_provedor) {
+      return toast.error("Cole o token UAZAPI da instância antes de conectar");
     }
     try {
       setConectandoId(c.id);
-      await conectarFn({ data: { conexaoId: c.id } });
+      const fn = c.provedor === "uazapi" ? conectarUazFn : conectarEvoFn;
+      await fn({ data: { conexaoId: c.id } });
       toast.success("QR Code gerado. Escaneie com o WhatsApp.");
       if (orgId) await carregar(orgId);
     } catch (e: any) {
@@ -116,12 +124,13 @@ function WhatsAppPage() {
 
   // Polling de status enquanto há conexão aguardando QR
   useEffect(() => {
-    const aguardando = conexoes.filter((c) => c.status === "aguardando_qr" && c.provedor === "evolution_qr");
+    const aguardando = conexoes.filter((c) => c.status === "aguardando_qr" && suportaQR(c.provedor));
     if (aguardando.length === 0) return;
     const interval = setInterval(async () => {
       for (const c of aguardando) {
         try {
-          const r: any = await statusFn({ data: { conexaoId: c.id } });
+          const fn = c.provedor === "uazapi" ? statusUazFn : statusEvoFn;
+          const r: any = await fn({ data: { conexaoId: c.id } });
           if (r?.status === "conectado") {
             toast.success(`${c.nome} conectado!`);
             if (orgId) await carregar(orgId);
@@ -130,7 +139,7 @@ function WhatsAppPage() {
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [conexoes, orgId, statusFn]);
+  }, [conexoes, orgId, statusEvoFn, statusUazFn]);
 
   const up = (p: any) => setForm((f) => ({ ...f, ...p }));
 
