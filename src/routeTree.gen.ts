@@ -17,6 +17,7 @@ import { Route as AppWhatsappRouteImport } from './routes/app.whatsapp'
 import { Route as AppRankingRouteImport } from './routes/app.ranking'
 import { Route as AppMetasRouteImport } from './routes/app.metas'
 import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
+import { Route as AppCuradoriaRouteImport } from './routes/app.curadoria'
 import { Route as AppConversasRouteImport } from './routes/app.conversas'
 import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
 import { Route as AppClientesRouteImport } from './routes/app.clientes'
@@ -73,6 +74,11 @@ const AppMetasRoute = AppMetasRouteImport.update({
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCuradoriaRoute = AppCuradoriaRouteImport.update({
+  id: '/curadoria',
+  path: '/curadoria',
   getParentRoute: () => AppRoute,
 } as any)
 const AppConversasRoute = AppConversasRouteImport.update({
@@ -176,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/app/clientes': typeof AppClientesRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/conversas': typeof AppConversasRoute
+  '/app/curadoria': typeof AppCuradoriaRoute
   '/app/dashboard': typeof AppDashboardRoute
   '/app/metas': typeof AppMetasRoute
   '/app/ranking': typeof AppRankingRoute
@@ -201,6 +208,7 @@ export interface FileRoutesByTo {
   '/app/atendentes': typeof AppAtendentesRouteWithChildren
   '/app/clientes': typeof AppClientesRoute
   '/app/conversas': typeof AppConversasRoute
+  '/app/curadoria': typeof AppCuradoriaRoute
   '/app/dashboard': typeof AppDashboardRoute
   '/app/metas': typeof AppMetasRoute
   '/app/ranking': typeof AppRankingRoute
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/app/clientes': typeof AppClientesRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/conversas': typeof AppConversasRoute
+  '/app/curadoria': typeof AppCuradoriaRoute
   '/app/dashboard': typeof AppDashboardRoute
   '/app/metas': typeof AppMetasRoute
   '/app/ranking': typeof AppRankingRoute
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/app/clientes'
     | '/app/configuracoes'
     | '/app/conversas'
+    | '/app/curadoria'
     | '/app/dashboard'
     | '/app/metas'
     | '/app/ranking'
@@ -283,6 +293,7 @@ export interface FileRouteTypes {
     | '/app/atendentes'
     | '/app/clientes'
     | '/app/conversas'
+    | '/app/curadoria'
     | '/app/dashboard'
     | '/app/metas'
     | '/app/ranking'
@@ -310,6 +321,7 @@ export interface FileRouteTypes {
     | '/app/clientes'
     | '/app/configuracoes'
     | '/app/conversas'
+    | '/app/curadoria'
     | '/app/dashboard'
     | '/app/metas'
     | '/app/ranking'
@@ -391,6 +403,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/app/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/curadoria': {
+      id: '/app/curadoria'
+      path: '/curadoria'
+      fullPath: '/app/curadoria'
+      preLoaderRoute: typeof AppCuradoriaRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/conversas': {
@@ -565,6 +584,7 @@ interface AppRouteChildren {
   AppClientesRoute: typeof AppClientesRoute
   AppConfiguracoesRoute: typeof AppConfiguracoesRouteWithChildren
   AppConversasRoute: typeof AppConversasRoute
+  AppCuradoriaRoute: typeof AppCuradoriaRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppMetasRoute: typeof AppMetasRoute
   AppRankingRoute: typeof AppRankingRoute
@@ -578,6 +598,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppClientesRoute: AppClientesRoute,
   AppConfiguracoesRoute: AppConfiguracoesRouteWithChildren,
   AppConversasRoute: AppConversasRoute,
+  AppCuradoriaRoute: AppCuradoriaRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppMetasRoute: AppMetasRoute,
   AppRankingRoute: AppRankingRoute,
