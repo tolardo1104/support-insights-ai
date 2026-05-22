@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppWhatsappRouteImport } from './routes/app.whatsapp'
 import { Route as AppRankingRouteImport } from './routes/app.ranking'
 import { Route as AppMetasRouteImport } from './routes/app.metas'
 import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
@@ -51,6 +52,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWhatsappRoute = AppWhatsappRouteImport.update({
+  id: '/whatsapp',
+  path: '/whatsapp',
   getParentRoute: () => AppRoute,
 } as any)
 const AppRankingRoute = AppRankingRouteImport.update({
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/app/dashboard': typeof AppDashboardRoute
   '/app/metas': typeof AppMetasRoute
   '/app/ranking': typeof AppRankingRoute
+  '/app/whatsapp': typeof AppWhatsappRoute
   '/app/': typeof AppIndexRoute
   '/app/atendentes/$id': typeof AppAtendentesIdRoute
   '/app/configuracoes/chatbot': typeof AppConfiguracoesChatbotRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/app/dashboard': typeof AppDashboardRoute
   '/app/metas': typeof AppMetasRoute
   '/app/ranking': typeof AppRankingRoute
+  '/app/whatsapp': typeof AppWhatsappRoute
   '/app': typeof AppIndexRoute
   '/app/atendentes/$id': typeof AppAtendentesIdRoute
   '/app/configuracoes/chatbot': typeof AppConfiguracoesChatbotRoute
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/app/dashboard': typeof AppDashboardRoute
   '/app/metas': typeof AppMetasRoute
   '/app/ranking': typeof AppRankingRoute
+  '/app/whatsapp': typeof AppWhatsappRoute
   '/app/': typeof AppIndexRoute
   '/app/atendentes/$id': typeof AppAtendentesIdRoute
   '/app/configuracoes/chatbot': typeof AppConfiguracoesChatbotRoute
@@ -242,6 +251,7 @@ export interface FileRouteTypes {
     | '/app/dashboard'
     | '/app/metas'
     | '/app/ranking'
+    | '/app/whatsapp'
     | '/app/'
     | '/app/atendentes/$id'
     | '/app/configuracoes/chatbot'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/app/dashboard'
     | '/app/metas'
     | '/app/ranking'
+    | '/app/whatsapp'
     | '/app'
     | '/app/atendentes/$id'
     | '/app/configuracoes/chatbot'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
     | '/app/dashboard'
     | '/app/metas'
     | '/app/ranking'
+    | '/app/whatsapp'
     | '/app/'
     | '/app/atendentes/$id'
     | '/app/configuracoes/chatbot'
@@ -339,6 +351,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/whatsapp': {
+      id: '/app/whatsapp'
+      path: '/whatsapp'
+      fullPath: '/app/whatsapp'
+      preLoaderRoute: typeof AppWhatsappRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/ranking': {
@@ -529,6 +548,7 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppMetasRoute: typeof AppMetasRoute
   AppRankingRoute: typeof AppRankingRoute
+  AppWhatsappRoute: typeof AppWhatsappRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
@@ -540,6 +560,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppMetasRoute: AppMetasRoute,
   AppRankingRoute: AppRankingRoute,
+  AppWhatsappRoute: AppWhatsappRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
