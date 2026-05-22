@@ -13,9 +13,12 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppWhatsappRouteImport } from './routes/app.whatsapp'
 import { Route as AppRankingRouteImport } from './routes/app.ranking'
 import { Route as AppMetasRouteImport } from './routes/app.metas'
 import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
+import { Route as AppCuradoriaRouteImport } from './routes/app.curadoria'
+import { Route as AppConversasRouteImport } from './routes/app.conversas'
 import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
 import { Route as AppClientesRouteImport } from './routes/app.clientes'
 import { Route as AppAtendentesRouteImport } from './routes/app.atendentes'
@@ -25,6 +28,12 @@ import { Route as AppConfiguracoesRankingRouteImport } from './routes/app.config
 import { Route as AppConfiguracoesMetasRouteImport } from './routes/app.configuracoes.metas'
 import { Route as AppConfiguracoesIntegracaoRouteImport } from './routes/app.configuracoes.integracao'
 import { Route as AppConfiguracoesIaRouteImport } from './routes/app.configuracoes.ia'
+import { Route as AppConfiguracoesChatbotTicketsRouteImport } from './routes/app.configuracoes.chatbot-tickets'
+import { Route as AppConfiguracoesChatbotRegrasRouteImport } from './routes/app.configuracoes.chatbot-regras'
+import { Route as AppConfiguracoesChatbotPromptRouteImport } from './routes/app.configuracoes.chatbot-prompt'
+import { Route as AppConfiguracoesChatbotFaqRouteImport } from './routes/app.configuracoes.chatbot-faq'
+import { Route as AppConfiguracoesChatbotConhecimentoRouteImport } from './routes/app.configuracoes.chatbot-conhecimento'
+import { Route as AppConfiguracoesChatbotRouteImport } from './routes/app.configuracoes.chatbot'
 import { Route as AppAtendentesIdRouteImport } from './routes/app.atendentes.$id'
 
 const LoginRoute = LoginRouteImport.update({
@@ -47,6 +56,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppWhatsappRoute = AppWhatsappRouteImport.update({
+  id: '/whatsapp',
+  path: '/whatsapp',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppRankingRoute = AppRankingRouteImport.update({
   id: '/ranking',
   path: '/ranking',
@@ -60,6 +74,16 @@ const AppMetasRoute = AppMetasRouteImport.update({
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCuradoriaRoute = AppCuradoriaRouteImport.update({
+  id: '/curadoria',
+  path: '/curadoria',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppConversasRoute = AppConversasRouteImport.update({
+  id: '/conversas',
+  path: '/conversas',
   getParentRoute: () => AppRoute,
 } as any)
 const AppConfiguracoesRoute = AppConfiguracoesRouteImport.update({
@@ -108,6 +132,41 @@ const AppConfiguracoesIaRoute = AppConfiguracoesIaRouteImport.update({
   path: '/ia',
   getParentRoute: () => AppConfiguracoesRoute,
 } as any)
+const AppConfiguracoesChatbotTicketsRoute =
+  AppConfiguracoesChatbotTicketsRouteImport.update({
+    id: '/chatbot-tickets',
+    path: '/chatbot-tickets',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
+const AppConfiguracoesChatbotRegrasRoute =
+  AppConfiguracoesChatbotRegrasRouteImport.update({
+    id: '/chatbot-regras',
+    path: '/chatbot-regras',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
+const AppConfiguracoesChatbotPromptRoute =
+  AppConfiguracoesChatbotPromptRouteImport.update({
+    id: '/chatbot-prompt',
+    path: '/chatbot-prompt',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
+const AppConfiguracoesChatbotFaqRoute =
+  AppConfiguracoesChatbotFaqRouteImport.update({
+    id: '/chatbot-faq',
+    path: '/chatbot-faq',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
+const AppConfiguracoesChatbotConhecimentoRoute =
+  AppConfiguracoesChatbotConhecimentoRouteImport.update({
+    id: '/chatbot-conhecimento',
+    path: '/chatbot-conhecimento',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
+const AppConfiguracoesChatbotRoute = AppConfiguracoesChatbotRouteImport.update({
+  id: '/chatbot',
+  path: '/chatbot',
+  getParentRoute: () => AppConfiguracoesRoute,
+} as any)
 const AppAtendentesIdRoute = AppAtendentesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -122,11 +181,20 @@ export interface FileRoutesByFullPath {
   '/app/atendentes': typeof AppAtendentesRouteWithChildren
   '/app/clientes': typeof AppClientesRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
+  '/app/conversas': typeof AppConversasRoute
+  '/app/curadoria': typeof AppCuradoriaRoute
   '/app/dashboard': typeof AppDashboardRoute
   '/app/metas': typeof AppMetasRoute
   '/app/ranking': typeof AppRankingRoute
+  '/app/whatsapp': typeof AppWhatsappRoute
   '/app/': typeof AppIndexRoute
   '/app/atendentes/$id': typeof AppAtendentesIdRoute
+  '/app/configuracoes/chatbot': typeof AppConfiguracoesChatbotRoute
+  '/app/configuracoes/chatbot-conhecimento': typeof AppConfiguracoesChatbotConhecimentoRoute
+  '/app/configuracoes/chatbot-faq': typeof AppConfiguracoesChatbotFaqRoute
+  '/app/configuracoes/chatbot-prompt': typeof AppConfiguracoesChatbotPromptRoute
+  '/app/configuracoes/chatbot-regras': typeof AppConfiguracoesChatbotRegrasRoute
+  '/app/configuracoes/chatbot-tickets': typeof AppConfiguracoesChatbotTicketsRoute
   '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
   '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
   '/app/configuracoes/metas': typeof AppConfiguracoesMetasRoute
@@ -139,11 +207,20 @@ export interface FileRoutesByTo {
   '/app/analise-ia': typeof AppAnaliseIaRoute
   '/app/atendentes': typeof AppAtendentesRouteWithChildren
   '/app/clientes': typeof AppClientesRoute
+  '/app/conversas': typeof AppConversasRoute
+  '/app/curadoria': typeof AppCuradoriaRoute
   '/app/dashboard': typeof AppDashboardRoute
   '/app/metas': typeof AppMetasRoute
   '/app/ranking': typeof AppRankingRoute
+  '/app/whatsapp': typeof AppWhatsappRoute
   '/app': typeof AppIndexRoute
   '/app/atendentes/$id': typeof AppAtendentesIdRoute
+  '/app/configuracoes/chatbot': typeof AppConfiguracoesChatbotRoute
+  '/app/configuracoes/chatbot-conhecimento': typeof AppConfiguracoesChatbotConhecimentoRoute
+  '/app/configuracoes/chatbot-faq': typeof AppConfiguracoesChatbotFaqRoute
+  '/app/configuracoes/chatbot-prompt': typeof AppConfiguracoesChatbotPromptRoute
+  '/app/configuracoes/chatbot-regras': typeof AppConfiguracoesChatbotRegrasRoute
+  '/app/configuracoes/chatbot-tickets': typeof AppConfiguracoesChatbotTicketsRoute
   '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
   '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
   '/app/configuracoes/metas': typeof AppConfiguracoesMetasRoute
@@ -159,11 +236,20 @@ export interface FileRoutesById {
   '/app/atendentes': typeof AppAtendentesRouteWithChildren
   '/app/clientes': typeof AppClientesRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
+  '/app/conversas': typeof AppConversasRoute
+  '/app/curadoria': typeof AppCuradoriaRoute
   '/app/dashboard': typeof AppDashboardRoute
   '/app/metas': typeof AppMetasRoute
   '/app/ranking': typeof AppRankingRoute
+  '/app/whatsapp': typeof AppWhatsappRoute
   '/app/': typeof AppIndexRoute
   '/app/atendentes/$id': typeof AppAtendentesIdRoute
+  '/app/configuracoes/chatbot': typeof AppConfiguracoesChatbotRoute
+  '/app/configuracoes/chatbot-conhecimento': typeof AppConfiguracoesChatbotConhecimentoRoute
+  '/app/configuracoes/chatbot-faq': typeof AppConfiguracoesChatbotFaqRoute
+  '/app/configuracoes/chatbot-prompt': typeof AppConfiguracoesChatbotPromptRoute
+  '/app/configuracoes/chatbot-regras': typeof AppConfiguracoesChatbotRegrasRoute
+  '/app/configuracoes/chatbot-tickets': typeof AppConfiguracoesChatbotTicketsRoute
   '/app/configuracoes/ia': typeof AppConfiguracoesIaRoute
   '/app/configuracoes/integracao': typeof AppConfiguracoesIntegracaoRoute
   '/app/configuracoes/metas': typeof AppConfiguracoesMetasRoute
@@ -180,11 +266,20 @@ export interface FileRouteTypes {
     | '/app/atendentes'
     | '/app/clientes'
     | '/app/configuracoes'
+    | '/app/conversas'
+    | '/app/curadoria'
     | '/app/dashboard'
     | '/app/metas'
     | '/app/ranking'
+    | '/app/whatsapp'
     | '/app/'
     | '/app/atendentes/$id'
+    | '/app/configuracoes/chatbot'
+    | '/app/configuracoes/chatbot-conhecimento'
+    | '/app/configuracoes/chatbot-faq'
+    | '/app/configuracoes/chatbot-prompt'
+    | '/app/configuracoes/chatbot-regras'
+    | '/app/configuracoes/chatbot-tickets'
     | '/app/configuracoes/ia'
     | '/app/configuracoes/integracao'
     | '/app/configuracoes/metas'
@@ -197,11 +292,20 @@ export interface FileRouteTypes {
     | '/app/analise-ia'
     | '/app/atendentes'
     | '/app/clientes'
+    | '/app/conversas'
+    | '/app/curadoria'
     | '/app/dashboard'
     | '/app/metas'
     | '/app/ranking'
+    | '/app/whatsapp'
     | '/app'
     | '/app/atendentes/$id'
+    | '/app/configuracoes/chatbot'
+    | '/app/configuracoes/chatbot-conhecimento'
+    | '/app/configuracoes/chatbot-faq'
+    | '/app/configuracoes/chatbot-prompt'
+    | '/app/configuracoes/chatbot-regras'
+    | '/app/configuracoes/chatbot-tickets'
     | '/app/configuracoes/ia'
     | '/app/configuracoes/integracao'
     | '/app/configuracoes/metas'
@@ -216,11 +320,20 @@ export interface FileRouteTypes {
     | '/app/atendentes'
     | '/app/clientes'
     | '/app/configuracoes'
+    | '/app/conversas'
+    | '/app/curadoria'
     | '/app/dashboard'
     | '/app/metas'
     | '/app/ranking'
+    | '/app/whatsapp'
     | '/app/'
     | '/app/atendentes/$id'
+    | '/app/configuracoes/chatbot'
+    | '/app/configuracoes/chatbot-conhecimento'
+    | '/app/configuracoes/chatbot-faq'
+    | '/app/configuracoes/chatbot-prompt'
+    | '/app/configuracoes/chatbot-regras'
+    | '/app/configuracoes/chatbot-tickets'
     | '/app/configuracoes/ia'
     | '/app/configuracoes/integracao'
     | '/app/configuracoes/metas'
@@ -264,6 +377,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/whatsapp': {
+      id: '/app/whatsapp'
+      path: '/whatsapp'
+      fullPath: '/app/whatsapp'
+      preLoaderRoute: typeof AppWhatsappRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/ranking': {
       id: '/app/ranking'
       path: '/ranking'
@@ -283,6 +403,20 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/app/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/curadoria': {
+      id: '/app/curadoria'
+      path: '/curadoria'
+      fullPath: '/app/curadoria'
+      preLoaderRoute: typeof AppCuradoriaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/conversas': {
+      id: '/app/conversas'
+      path: '/conversas'
+      fullPath: '/app/conversas'
+      preLoaderRoute: typeof AppConversasRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/configuracoes': {
@@ -348,6 +482,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesIaRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
+    '/app/configuracoes/chatbot-tickets': {
+      id: '/app/configuracoes/chatbot-tickets'
+      path: '/chatbot-tickets'
+      fullPath: '/app/configuracoes/chatbot-tickets'
+      preLoaderRoute: typeof AppConfiguracoesChatbotTicketsRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
+    '/app/configuracoes/chatbot-regras': {
+      id: '/app/configuracoes/chatbot-regras'
+      path: '/chatbot-regras'
+      fullPath: '/app/configuracoes/chatbot-regras'
+      preLoaderRoute: typeof AppConfiguracoesChatbotRegrasRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
+    '/app/configuracoes/chatbot-prompt': {
+      id: '/app/configuracoes/chatbot-prompt'
+      path: '/chatbot-prompt'
+      fullPath: '/app/configuracoes/chatbot-prompt'
+      preLoaderRoute: typeof AppConfiguracoesChatbotPromptRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
+    '/app/configuracoes/chatbot-faq': {
+      id: '/app/configuracoes/chatbot-faq'
+      path: '/chatbot-faq'
+      fullPath: '/app/configuracoes/chatbot-faq'
+      preLoaderRoute: typeof AppConfiguracoesChatbotFaqRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
+    '/app/configuracoes/chatbot-conhecimento': {
+      id: '/app/configuracoes/chatbot-conhecimento'
+      path: '/chatbot-conhecimento'
+      fullPath: '/app/configuracoes/chatbot-conhecimento'
+      preLoaderRoute: typeof AppConfiguracoesChatbotConhecimentoRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
+    '/app/configuracoes/chatbot': {
+      id: '/app/configuracoes/chatbot'
+      path: '/chatbot'
+      fullPath: '/app/configuracoes/chatbot'
+      preLoaderRoute: typeof AppConfiguracoesChatbotRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
     '/app/atendentes/$id': {
       id: '/app/atendentes/$id'
       path: '/$id'
@@ -371,6 +547,12 @@ const AppAtendentesRouteWithChildren = AppAtendentesRoute._addFileChildren(
 )
 
 interface AppConfiguracoesRouteChildren {
+  AppConfiguracoesChatbotRoute: typeof AppConfiguracoesChatbotRoute
+  AppConfiguracoesChatbotConhecimentoRoute: typeof AppConfiguracoesChatbotConhecimentoRoute
+  AppConfiguracoesChatbotFaqRoute: typeof AppConfiguracoesChatbotFaqRoute
+  AppConfiguracoesChatbotPromptRoute: typeof AppConfiguracoesChatbotPromptRoute
+  AppConfiguracoesChatbotRegrasRoute: typeof AppConfiguracoesChatbotRegrasRoute
+  AppConfiguracoesChatbotTicketsRoute: typeof AppConfiguracoesChatbotTicketsRoute
   AppConfiguracoesIaRoute: typeof AppConfiguracoesIaRoute
   AppConfiguracoesIntegracaoRoute: typeof AppConfiguracoesIntegracaoRoute
   AppConfiguracoesMetasRoute: typeof AppConfiguracoesMetasRoute
@@ -379,6 +561,13 @@ interface AppConfiguracoesRouteChildren {
 }
 
 const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
+  AppConfiguracoesChatbotRoute: AppConfiguracoesChatbotRoute,
+  AppConfiguracoesChatbotConhecimentoRoute:
+    AppConfiguracoesChatbotConhecimentoRoute,
+  AppConfiguracoesChatbotFaqRoute: AppConfiguracoesChatbotFaqRoute,
+  AppConfiguracoesChatbotPromptRoute: AppConfiguracoesChatbotPromptRoute,
+  AppConfiguracoesChatbotRegrasRoute: AppConfiguracoesChatbotRegrasRoute,
+  AppConfiguracoesChatbotTicketsRoute: AppConfiguracoesChatbotTicketsRoute,
   AppConfiguracoesIaRoute: AppConfiguracoesIaRoute,
   AppConfiguracoesIntegracaoRoute: AppConfiguracoesIntegracaoRoute,
   AppConfiguracoesMetasRoute: AppConfiguracoesMetasRoute,
@@ -394,9 +583,12 @@ interface AppRouteChildren {
   AppAtendentesRoute: typeof AppAtendentesRouteWithChildren
   AppClientesRoute: typeof AppClientesRoute
   AppConfiguracoesRoute: typeof AppConfiguracoesRouteWithChildren
+  AppConversasRoute: typeof AppConversasRoute
+  AppCuradoriaRoute: typeof AppCuradoriaRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppMetasRoute: typeof AppMetasRoute
   AppRankingRoute: typeof AppRankingRoute
+  AppWhatsappRoute: typeof AppWhatsappRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
@@ -405,9 +597,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppAtendentesRoute: AppAtendentesRouteWithChildren,
   AppClientesRoute: AppClientesRoute,
   AppConfiguracoesRoute: AppConfiguracoesRouteWithChildren,
+  AppConversasRoute: AppConversasRoute,
+  AppCuradoriaRoute: AppCuradoriaRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppMetasRoute: AppMetasRoute,
   AppRankingRoute: AppRankingRoute,
+  AppWhatsappRoute: AppWhatsappRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
